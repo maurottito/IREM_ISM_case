@@ -57,7 +57,7 @@ function fileToImagePart(file: File): Promise<{ media_type: string; data: string
 }
 
 interface UploadPageProps {
-  onValidate: () => void;
+  onValidate: (rows: CaseRecord[]) => void;
 }
 
 export function UploadPage({ onValidate }: UploadPageProps) {
@@ -70,6 +70,10 @@ export function UploadPage({ onValidate }: UploadPageProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
 
   const needsReviewCount = rows.filter((r) => r.needsReview).length;
+
+  const updateRow = (i: number, field: keyof CaseRecord, value: string) => {
+    setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  };
 
   const handleFiles = async (fileList: FileList | null) => {
     const files = Array.from(fileList ?? []).filter((f) => f.type.startsWith('image/'));
@@ -208,7 +212,7 @@ export function UploadPage({ onValidate }: UploadPageProps) {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button type="button" className="btn btn-outline" onClick={() => setStep('idle')}>Subir más imágenes</button>
-          <button type="button" className="btn btn-primary" onClick={onValidate}>
+          <button type="button" className="btn btn-primary" onClick={() => onValidate(rows)}>
             <CheckIcon /> Validar registros
           </button>
         </div>
@@ -236,33 +240,37 @@ export function UploadPage({ onValidate }: UploadPageProps) {
             <tbody>
               {rows.map((row, i) => (
                 <tr key={`${row.id}-${i}`} className={row.needsReview ? 'flag-row' : ''}>
-                  <td><input className="rev-input" defaultValue={row.date} style={{ width: 88, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
+                  <td><input className="rev-input" value={row.date} onChange={(e) => updateRow(i, 'date', e.target.value)} style={{ width: 88, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
                   <td>
-                    <input className="rev-input" defaultValue={row.colvol} style={{ marginBottom: 2 }} />
-                    <input className="rev-input" defaultValue={row.colvolCode} style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5 }} />
+                    <input className="rev-input" value={row.colvol} onChange={(e) => updateRow(i, 'colvol', e.target.value)} style={{ marginBottom: 2 }} />
+                    <input className="rev-input" value={row.colvolCode} onChange={(e) => updateRow(i, 'colvolCode', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5 }} />
                   </td>
-                  <td><input className="rev-input" defaultValue={row.id} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td><input className="rev-input" defaultValue={row.locality} /></td>
+                  <td><input className="rev-input" value={row.id} onChange={(e) => updateRow(i, 'id', e.target.value)} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
+                  <td><input className="rev-input" value={row.locality} onChange={(e) => updateRow(i, 'locality', e.target.value)} /></td>
                   <td>
-                    <select className="rev-select" defaultValue={row.motivo}>
+                    <select className="rev-select" value={row.motivo} onChange={(e) => updateRow(i, 'motivo', e.target.value)}>
                       <option>Sospechoso</option>
                       <option>Conviviente</option>
                       <option>Seguimiento</option>
                     </select>
                   </td>
-                  <td><input className="rev-input" defaultValue={row.nombre} /></td>
-                  <td><input className="rev-input" defaultValue={row.ident} style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td><input className="rev-input" defaultValue={row.nacionalidad} /></td>
+                  <td><input className="rev-input" value={row.nombre} onChange={(e) => updateRow(i, 'nombre', e.target.value)} /></td>
+                  <td><input className="rev-input" value={row.ident} onChange={(e) => updateRow(i, 'ident', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
+                  <td><input className="rev-input" value={row.nacionalidad} onChange={(e) => updateRow(i, 'nacionalidad', e.target.value)} /></td>
                   <td>
-                    <select className="rev-select" defaultValue={row.sexo} style={{ width: 62 }}>
+                    <select className="rev-select" value={row.sexo} onChange={(e) => updateRow(i, 'sexo', e.target.value)} style={{ width: 62 }}>
                       <option>M</option>
                       <option>H</option>
                     </select>
                   </td>
-                  <td><input className="rev-input" defaultValue={row.fnac} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
+                  <td><input className="rev-input" value={row.fnac} onChange={(e) => updateRow(i, 'fnac', e.target.value)} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
                   <td>
                     {row.needsReview ? (
-                      <select className="rev-select warn-select" defaultValue={['P. vivax','P. falciparum','Negativa','Inválida'].includes(row.result) ? row.result : ''}>
+                      <select
+                        className="rev-select warn-select"
+                        value={['P. vivax', 'P. falciparum', 'Negativa', 'Inválida'].includes(row.result) ? row.result : ''}
+                        onChange={(e) => updateRow(i, 'result', e.target.value)}
+                      >
                         <option value="" disabled>⚠ Seleccionar…</option>
                         <option>P. vivax</option>
                         <option>P. falciparum</option>
@@ -274,13 +282,13 @@ export function UploadPage({ onValidate }: UploadPageProps) {
                     )}
                   </td>
                   <td>
-                    <select className="rev-select" defaultValue={row.searchType}>
+                    <select className="rev-select" value={row.searchType} onChange={(e) => updateRow(i, 'searchType', e.target.value)}>
                       <option>Pasiva</option>
                       <option>Proactiva</option>
                       <option>Reactiva</option>
                     </select>
                   </td>
-                  <td><input className="rev-input" defaultValue={row.medic} style={{ width: 110 }} /></td>
+                  <td><input className="rev-input" value={row.medic} onChange={(e) => updateRow(i, 'medic', e.target.value)} style={{ width: 110 }} /></td>
                 </tr>
               ))}
             </tbody>

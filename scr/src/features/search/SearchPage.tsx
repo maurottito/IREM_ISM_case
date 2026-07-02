@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { searchRows } from '../../data/mock';
 import { StatusBadge } from '../../components/StatusBadge';
+import type { CaseRecord } from '../../types';
 
 const DownloadIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -24,12 +25,13 @@ const pdrChips: { key: PdrKey; label: string; color: string }[] = [
 
 interface SearchPageProps {
   onToast: (msg: string) => void;
-  extraRows?: boolean;
+  validatedRows?: CaseRecord[];
 }
 
-export function SearchPage({ onToast, extraRows = false }: SearchPageProps) {
+export function SearchPage({ onToast, validatedRows = [] }: SearchPageProps) {
   const [filters, setFilters] = useState<Record<PdrKey, boolean>>({ pv: true, pf: true, neg: false, inv: false });
-  const allRows = extraRows ? [...searchRows, ...searchRows.slice(0, 2)] : searchRows;
+  const allRows = [...validatedRows, ...searchRows];
+  const totalRegistros = 128 + validatedRows.length;
 
   const toggle = (k: PdrKey) => setFilters((f) => ({ ...f, [k]: !f[k] }));
 
@@ -112,7 +114,7 @@ export function SearchPage({ onToast, extraRows = false }: SearchPageProps) {
 
       <div className="section-row">
         <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>
-          Mostrando <strong style={{ color: 'var(--text-strong)' }}>{allRows.length}</strong> de <strong style={{ color: 'var(--text-strong)' }}>{extraRows ? 134 : 128}</strong> registros
+          Mostrando <strong style={{ color: 'var(--text-strong)' }}>{allRows.length}</strong> de <strong style={{ color: 'var(--text-strong)' }}>{totalRegistros}</strong> registros
         </p>
         <button type="button" className="btn btn-outline" onClick={() => onToast(`Descargando registros_tumaco_jun2026.xlsx (${allRows.length} registros)`)}>
           <DownloadIcon /> Descargar Excel
@@ -139,7 +141,7 @@ export function SearchPage({ onToast, extraRows = false }: SearchPageProps) {
             </thead>
             <tbody>
               {allRows.map((row, i) => (
-                <tr key={`${row.id}-${i}`}>
+                <tr key={`${row.id}-${i}`} style={i < validatedRows.length ? { background: 'color-mix(in srgb, var(--green-500, #2f9e44) 8%, #fff)' } : undefined}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-muted)' }}>{row.date}</td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>{row.id}</td>
                   <td>{row.locality}</td>

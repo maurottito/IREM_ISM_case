@@ -6,7 +6,7 @@ import { SearchPage } from './features/search/SearchPage';
 import { UploadPage } from './features/upload/UploadPage';
 import { identities } from './data/mock';
 import { Toast } from './components/Toast';
-import type { AppRoute, AppView, UserRole } from './types';
+import type { AppRoute, AppView, CaseRecord, UserRole } from './types';
 
 const roleRoutes: Record<UserRole, AppRoute[]> = {
   supervisor: ['upload', 'search', 'dashboard'],
@@ -44,7 +44,7 @@ export default function App() {
   const [route, setRoute] = useState<AppRoute>('dashboard');
   const [toast, setToast] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [extraSearchRows, setExtraSearchRows] = useState(false);
+  const [validatedRows, setValidatedRows] = useState<CaseRecord[]>([]);
   const userRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
 
@@ -73,9 +73,9 @@ export default function App() {
     setRole('guest'); setRoute('dashboard');
   };
 
-  const handleValidate = () => {
-    showToast('42 registros validados y sincronizados con el consolidado regional');
-    setExtraSearchRows(true);
+  const handleValidate = (rows: CaseRecord[]) => {
+    setValidatedRows((prev) => [...rows, ...prev]);
+    showToast(`${rows.length} ${rows.length === 1 ? 'registro validado' : 'registros validados'} y sincronizados con el consolidado regional`);
     setTimeout(() => { setRoute('search'); }, 2000);
   };
 
@@ -136,7 +136,7 @@ export default function App() {
         onLogin={() => setView('login')}
       >
         {activeRoute === 'upload' && <UploadPage onValidate={handleValidate} />}
-        {activeRoute === 'search' && <SearchPage onToast={showToast} extraRows={extraSearchRows} />}
+        {activeRoute === 'search' && <SearchPage onToast={showToast} validatedRows={validatedRows} />}
         {activeRoute === 'api' && <ApiPage onToast={showToast} />}
         {activeRoute === 'dashboard' && <DashboardPage />}
       </AppShell>
