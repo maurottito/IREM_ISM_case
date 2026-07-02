@@ -217,83 +217,98 @@ export function UploadPage({ onValidate }: UploadPageProps) {
           </button>
         </div>
       </div>
-      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha toma</th>
-                <th>ColVol</th>
-                <th>Cód. muestra</th>
-                <th>Localidad</th>
-                <th>Motivo</th>
-                <th>Nombre completo</th>
-                <th>Identificación</th>
-                <th>Nacionalidad</th>
-                <th>Sexo</th>
-                <th>Fecha nac.</th>
-                <th>PDR</th>
-                <th>Tipo de búsqueda</th>
-                <th>¿Medicamento?</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => (
-                <tr key={`${row.id}-${i}`} className={row.needsReview ? 'flag-row' : ''}>
-                  <td><input className="rev-input" value={row.date} onChange={(e) => updateRow(i, 'date', e.target.value)} style={{ width: 88, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td>
-                    <input className="rev-input" value={row.colvol} onChange={(e) => updateRow(i, 'colvol', e.target.value)} style={{ marginBottom: 2 }} />
-                    <input className="rev-input" value={row.colvolCode} onChange={(e) => updateRow(i, 'colvolCode', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5 }} />
-                  </td>
-                  <td><input className="rev-input" value={row.id} onChange={(e) => updateRow(i, 'id', e.target.value)} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td><input className="rev-input" value={row.locality} onChange={(e) => updateRow(i, 'locality', e.target.value)} /></td>
-                  <td>
-                    <select className="rev-select" value={row.motivo} onChange={(e) => updateRow(i, 'motivo', e.target.value)}>
-                      <option>Sospechoso</option>
-                      <option>Conviviente</option>
-                      <option>Seguimiento</option>
-                    </select>
-                  </td>
-                  <td><input className="rev-input" value={row.nombre} onChange={(e) => updateRow(i, 'nombre', e.target.value)} /></td>
-                  <td><input className="rev-input" value={row.ident} onChange={(e) => updateRow(i, 'ident', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td><input className="rev-input" value={row.nacionalidad} onChange={(e) => updateRow(i, 'nacionalidad', e.target.value)} /></td>
-                  <td>
-                    <select className="rev-select" value={row.sexo} onChange={(e) => updateRow(i, 'sexo', e.target.value)} style={{ width: 62 }}>
-                      <option>M</option>
-                      <option>H</option>
-                    </select>
-                  </td>
-                  <td><input className="rev-input" value={row.fnac} onChange={(e) => updateRow(i, 'fnac', e.target.value)} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td>
-                    {row.needsReview ? (
-                      <select
-                        className="rev-select warn-select"
-                        value={['P. vivax', 'P. falciparum', 'Negativa', 'Inválida'].includes(row.result) ? row.result : ''}
-                        onChange={(e) => updateRow(i, 'result', e.target.value)}
-                      >
-                        <option value="" disabled>⚠ Seleccionar…</option>
-                        <option>P. vivax</option>
-                        <option>P. falciparum</option>
-                        <option>Negativa</option>
-                        <option>Inválida</option>
-                      </select>
-                    ) : (
-                      <StatusBadge result={row.result} />
-                    )}
-                  </td>
-                  <td>
-                    <select className="rev-select" value={row.searchType} onChange={(e) => updateRow(i, 'searchType', e.target.value)}>
-                      <option>Pasiva</option>
-                      <option>Proactiva</option>
-                      <option>Reactiva</option>
-                    </select>
-                  </td>
-                  <td><input className="rev-input" value={row.medic} onChange={(e) => updateRow(i, 'medic', e.target.value)} style={{ width: 110 }} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="rev-cards">
+        {rows.map((row, i) => (
+          <div key={`${row.id}-${i}`} className={`rev-card${row.needsReview ? ' flag' : ''}`}>
+            <div className="rev-card-head">
+              <span className="rev-card-idx">Registro {i + 1}</span>
+              {row.needsReview && <span className="rev-flag-chip">⚠ Revisar</span>}
+            </div>
+            <div className="rev-grid">
+              <label className="rev-field">
+                <span>Fecha toma</span>
+                <input className="rev-input" value={row.date} onChange={(e) => updateRow(i, 'date', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+              </label>
+              <label className="rev-field">
+                <span>Cód. muestra</span>
+                <input className="rev-input" value={row.id} onChange={(e) => updateRow(i, 'id', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+              </label>
+              <label className="rev-field">
+                <span>ColVol</span>
+                <input className="rev-input" value={row.colvol} onChange={(e) => updateRow(i, 'colvol', e.target.value)} />
+              </label>
+              <label className="rev-field">
+                <span>Código ColVol</span>
+                <input className="rev-input" value={row.colvolCode} onChange={(e) => updateRow(i, 'colvolCode', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+              </label>
+              <label className="rev-field">
+                <span>Localidad</span>
+                <input className="rev-input" value={row.locality} onChange={(e) => updateRow(i, 'locality', e.target.value)} />
+              </label>
+              <label className="rev-field">
+                <span>Motivo</span>
+                <select className="rev-select" value={row.motivo} onChange={(e) => updateRow(i, 'motivo', e.target.value)}>
+                  <option>Sospechoso</option>
+                  <option>Conviviente</option>
+                  <option>Seguimiento</option>
+                </select>
+              </label>
+              <label className="rev-field span-2">
+                <span>Nombre completo</span>
+                <input className="rev-input" value={row.nombre} onChange={(e) => updateRow(i, 'nombre', e.target.value)} />
+              </label>
+              <label className="rev-field">
+                <span>Identificación</span>
+                <input className="rev-input" value={row.ident} onChange={(e) => updateRow(i, 'ident', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+              </label>
+              <label className="rev-field">
+                <span>Nacionalidad</span>
+                <input className="rev-input" value={row.nacionalidad} onChange={(e) => updateRow(i, 'nacionalidad', e.target.value)} />
+              </label>
+              <label className="rev-field">
+                <span>Sexo</span>
+                <select className="rev-select" value={row.sexo} onChange={(e) => updateRow(i, 'sexo', e.target.value)}>
+                  <option>M</option>
+                  <option>H</option>
+                </select>
+              </label>
+              <label className="rev-field">
+                <span>Fecha nac.</span>
+                <input className="rev-input" value={row.fnac} onChange={(e) => updateRow(i, 'fnac', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+              </label>
+              <label className="rev-field">
+                <span>PDR</span>
+                {row.needsReview ? (
+                  <select
+                    className="rev-select warn-select"
+                    value={['P. vivax', 'P. falciparum', 'Negativa', 'Inválida'].includes(row.result) ? row.result : ''}
+                    onChange={(e) => updateRow(i, 'result', e.target.value)}
+                  >
+                    <option value="" disabled>⚠ Seleccionar…</option>
+                    <option>P. vivax</option>
+                    <option>P. falciparum</option>
+                    <option>Negativa</option>
+                    <option>Inválida</option>
+                  </select>
+                ) : (
+                  <div className="rev-pdr-static"><StatusBadge result={row.result} /></div>
+                )}
+              </label>
+              <label className="rev-field">
+                <span>Tipo de búsqueda</span>
+                <select className="rev-select" value={row.searchType} onChange={(e) => updateRow(i, 'searchType', e.target.value)}>
+                  <option>Pasiva</option>
+                  <option>Proactiva</option>
+                  <option>Reactiva</option>
+                </select>
+              </label>
+              <label className="rev-field span-2">
+                <span>¿Medicamento?</span>
+                <input className="rev-input" value={row.medic} onChange={(e) => updateRow(i, 'medic', e.target.value)} />
+              </label>
+            </div>
+          </div>
+        ))}
       </div>
       <p style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>Los registros validados se sincronizan con el consolidado regional y quedan disponibles para especialistas y gerentes.</p>
     </div>
