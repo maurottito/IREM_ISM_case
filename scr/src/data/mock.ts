@@ -58,3 +58,16 @@ export const positivityData = [
   { l: 'W19', v: 12.1 }, { l: 'W20', v: 13.4 }, { l: 'W21', v: 12.8 }, { l: 'W22', v: 13.9 },
   { l: 'W23', v: 13.1 }, { l: 'W24', v: 12.6 }, { l: 'W25', v: 13.5 }, { l: 'W26', v: 12.4, hi: true },
 ];
+
+// ── Datos por mes (todo el año 2026) ─────────────────────────────
+export const incidenceYear = [
+  { l: 'Ene', v: 1.8 }, { l: 'Feb', v: 2.0 }, { l: 'Mar', v: 2.3 }, { l: 'Abr', v: 2.6 },
+  { l: 'May', v: 2.9 }, { l: 'Jun', v: 3.4 }, { l: 'Jul', v: 3.9 }, { l: 'Ago', v: 4.2 },
+  { l: 'Sep', v: 3.8 }, { l: 'Oct', v: 3.3 }, { l: 'Nov', v: 2.7 }, { l: 'Dic', v: 2.4, hi: true },
+];
+
+export const positivityYear = [
+  { l: 'Ene', v: 9.2 }, { l: 'Feb', v: 10.1 }, { l: 'Mar', v: 11.4 }, { l: 'Abr', v: 12.0 },
+  { l: 'May', v: 12.8 }, { l: 'Jun', v: 13.5 }, { l: 'Jul', v: 14.2 }, { l: 'Ago', v: 13.8 },
+  { l: 'Sep', v: 13.1 }, { l: 'Oct', v: 12.4 }, { l: 'Nov', v: 11.6 }, { l: 'Dic', v: 11.0, hi: true },
+];

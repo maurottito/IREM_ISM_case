@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { COLOMBIA_DEPTS } from '../../data/colombia-departments';
-import { regionData, incidenceData, positivityData } from '../../data/mock';
+import { regionData, incidenceData, positivityData, incidenceYear, positivityYear } from '../../data/mock';
 
 // ── SVG line chart ──────────────────────────────────────────────
 function LineChart({ data, max, color, id }: { data: { l: string; v: number; hi?: boolean }[]; max: number; color: string; id: string }) {
@@ -206,12 +206,12 @@ function Choropleth() {
   );
 }
 
-// ── StatCard ─────────────────────────────────────────────────────
+// ── StatCard · totales nacionales (Colombia) ─────────────────────
 const statCards = [
-  { label: 'Casos confirmados', value: '1.284', delta: '+8.2%', trend: 'up' },
-  { label: 'Tasa de positividad', value: '12.4%', delta: '-1.1%', trend: 'down' },
-  { label: 'Casos por 1.000 hab', value: '3.6', delta: '+0.4', trend: 'up' },
-  { label: 'Localidades activas', value: '18', delta: 'de 24', trend: 'flat' },
+  { label: 'Casos confirmados', value: '6.842', delta: '+7.4%', trend: 'up' },
+  { label: 'Tasa de positividad', value: '11.8%', delta: '-0.9%', trend: 'down' },
+  { label: 'Casos por 1.000 hab', value: '2.9', delta: '+0.3', trend: 'up' },
+  { label: 'Localidades activas', value: '110', delta: 'de 180', trend: 'flat' },
 ];
 
 const regionOptions = ['Nariño', 'Chocó', 'Cauca', 'Valle del Cauca', 'Antioquia', 'Córdoba', 'Amazonas', 'Putumayo', 'Guaviare', 'Vichada'];
@@ -220,13 +220,21 @@ function normRegion(s: string) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '
 
 export function DashboardPage() {
   const [region, setRegion] = useState('Nariño');
+  const [period, setPeriod] = useState<'weeks' | 'year'>('weeks');
   const info = regionData[normRegion(region)] ?? { cases: 0, pos: '—', localities: '—', trend: '—' };
+
+  const isYear = period === 'year';
+  const incData = isYear ? incidenceYear : incidenceData;
+  const posData = isYear ? positivityYear : positivityData;
+  const incMax = isYear ? 5 : 4;
+  const trendSub = isYear ? 'por mes · año 2026' : 'últimas 12 semanas';
+  const compareLabel = isYear ? 'vs. mes anterior' : 'vs. semana anterior';
 
   return (
     <div className="page-content wide">
       <div className="dash-top">
         <div>
-          <div className="page-title">Panel epidemiológico · {region}</div>
+          <div className="page-title">Panel epidemiológico</div>
           <div className="page-subtitle">Vigilancia de casos de malaria por territorio y tendencia · Semana epidemiológica 2026-W26</div>
         </div>
         <div className="dash-filters">
@@ -237,21 +245,22 @@ export function DashboardPage() {
             </select>
           </div>
           <div className="dash-filter-group">
-            <div className="dash-filter-label">Distrito</div>
-            <select className="filter-select" style={{ height: 38 }}>
-              <option>Todos</option><option>Tumaco</option><option>Barbacoas</option>
-            </select>
-          </div>
-          <div className="dash-filter-group">
             <div className="dash-filter-label">Periodo</div>
-            <select className="filter-select" style={{ height: 38 }}>
-              <option>Últimas 12 semanas</option><option>Año 2026</option>
+            <select
+              className="filter-select"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as 'weeks' | 'year')}
+              style={{ height: 38 }}
+            >
+              <option value="weeks">Últimas 12 semanas</option>
+              <option value="year">Todo el año 2026</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards · totales nacionales */}
+      <div className="dash-filter-label" style={{ marginBottom: -6 }}>Total nacional · Colombia</div>
       <div className="stat-cards">
         {statCards.map((s) => (
           <div key={s.label} className="stat-card">
@@ -259,7 +268,7 @@ export function DashboardPage() {
             <div className="stat-value">{s.value}</div>
             <div className="stat-footer">
               <span className={s.trend === 'up' ? 'delta-up' : s.trend === 'down' ? 'delta-down' : 'delta-flat'}>{s.delta}</span>
-              <span style={{ color: 'var(--text-faint)' }}>vs. semana anterior</span>
+              <span style={{ color: 'var(--text-faint)' }}>{compareLabel}</span>
             </div>
           </div>
         ))}
@@ -313,13 +322,13 @@ export function DashboardPage() {
       <div className="charts-2col">
         <div className="chart-card">
           <p className="chart-title">Casos por 1.000 habitantes</p>
-          <p className="chart-sub">Incidencia semanal · últimas 12 semanas</p>
-          <LineChart data={incidenceData} max={4} color="var(--blue-500)" id="inc" />
+          <p className="chart-sub">Incidencia · {trendSub}</p>
+          <LineChart data={incData} max={incMax} color="var(--blue-500)" id="inc" />
         </div>
         <div className="chart-card">
           <p className="chart-title">Tasa de positividad</p>
-          <p className="chart-sub">% de pruebas positivas · últimas 12 semanas</p>
-          <LineChart data={positivityData} max={16} color="var(--status-positive-500)" id="pos" />
+          <p className="chart-sub">% de pruebas positivas · {trendSub}</p>
+          <LineChart data={posData} max={16} color="var(--status-positive-500)" id="pos" />
         </div>
       </div>
 
