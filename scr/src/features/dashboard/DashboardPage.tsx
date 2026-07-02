@@ -162,45 +162,59 @@ function ColombiaMap({ selected }: { selected: string }) {
   );
 }
 
-// ── Choropleth of local zones ────────────────────────────────────
-const choroplethZones = [
-  { n: 'Barbacoas', c: 62, path: 'M250,40 L340,55 L360,120 L300,160 L235,130 L230,75 Z' },
-  { n: 'Magüí Payán', c: 48, path: 'M150,70 L230,75 L235,130 L180,165 L120,135 L120,90 Z' },
-  { n: 'Tumaco', c: 71, path: 'M60,140 L120,135 L180,165 L165,235 L95,255 L45,205 Z' },
-  { n: 'Olaya Herrera', c: 33, path: 'M180,165 L235,130 L300,160 L290,225 L230,250 L165,235 Z' },
-  { n: 'Roberto Payán', c: 55, path: 'M300,160 L360,120 L395,175 L360,240 L290,225 Z' },
-  { n: 'El Charco', c: 24, path: 'M95,255 L165,235 L230,250 L215,315 L140,330 L85,295 Z' },
-  { n: 'Fco. Pizarro', c: 40, path: 'M230,250 L290,225 L360,240 L350,305 L280,325 L215,315 Z' },
+// ── District bubble map over the real Nariño department shape ─────
+const NARINO_PATH = 'M89,8L92,11L94,14L96,17L98,19L101,22L104,26L106,29L107,33L109,35L113,37L116,39L119,40L123,40L128,40L131,39L134,38L138,39L139,42L139,46L141,49L143,47L146,48L146,52L147,56L150,58L150,62L148,64L146,66L144,68L143,71L143,75L142,78L140,81L143,82L147,82L150,83L153,82L157,82L161,82L165,81L167,79L171,81L173,83L176,85L179,86L181,88L184,89L185,92L184,96L182,99L181,103L183,106L184,110L182,112L179,114L176,116L173,118L169,118L166,120L162,121L160,123L161,127L161,131L162,135L162,141L163,146L165,148L164,151L165,156L166,160L167,164L165,166L162,167L158,167L159,171L158,174L158,178L160,180L161,183L161,187L160,190L155,190L152,191L149,192L144,190L141,189L137,190L134,191L132,188L131,185L129,182L127,179L126,175L127,172L125,169L123,167L118,166L115,164L113,161L113,157L114,154L113,151L109,151L105,152L102,153L98,154L95,155L91,155L86,153L83,151L81,149L78,147L74,145L71,143L69,141L66,139L64,136L61,135L56,134L53,132L52,129L49,127L47,124L43,122L39,122L36,121L33,119L31,116L28,114L26,111L23,108L19,106L17,103L14,100L13,97L10,98L9,95L7,93L4,91L1,89L0,85L2,82L4,80L6,78L9,75L11,71L14,70L19,70L23,71L29,72L33,72L36,73L39,71L38,68L39,64L37,62L36,59L35,56L34,53L30,53L29,48L30,44L34,44L37,43L38,40L37,37L35,35L34,32L33,29L34,25L36,21L37,18L39,16L41,14L45,12L47,10L50,7L52,11L54,14L57,18L56,15L57,11L58,8L60,10L62,8L64,6L66,3L68,1L71,0L74,1L75,4L76,7L80,6L82,4L84,0L86,3L88,5L89,8Z';
+
+const narinoDistricts = [
+  { n: 'Tumaco', c: 71, x: 30, y: 90 },
+  { n: 'Barbacoas', c: 62, x: 120, y: 90 },
+  { n: 'Roberto Payán', c: 55, x: 80, y: 120 },
+  { n: 'Magüí Payán', c: 48, x: 110, y: 150 },
+  { n: 'Fco. Pizarro', c: 40, x: 135, y: 174 },
+  { n: 'Olaya Herrera', c: 33, x: 90, y: 54 },
+  { n: 'El Charco', c: 24, x: 55, y: 30 },
 ];
 const colorScale = ['#EAF3DC', '#C9E29B', '#92BF4E', '#E69A29', '#D64545'];
 const bucket = (c: number) => c >= 60 ? 4 : c >= 45 ? 3 : c >= 30 ? 2 : c >= 15 ? 1 : 0;
 
-function Choropleth() {
+function NarinoDistrictMap() {
+  const maxC = Math.max(...narinoDistricts.map((d) => d.c));
+  const ranked = [...narinoDistricts].sort((a, b) => b.c - a.c);
   return (
-    <div>
-      <svg viewBox="0 0 420 360" style={{ width: '100%', height: 'auto', display: 'block' }}>
-        {choroplethZones.map((z, i) => {
-          const fill = colorScale[bucket(z.c)];
-          const nums = z.path.match(/[\d.]+/g)!.map(Number);
-          let sx = 0, sy = 0, n = 0;
-          for (let k = 0; k < nums.length; k += 2) { sx += nums[k]; sy += nums[k + 1]; n++; }
-          const cx = sx / n, cy = sy / n;
-          const dark = bucket(z.c) >= 3;
-          return (
-            <g key={i}>
-              <path d={z.path} fill={fill} stroke="#fff" strokeWidth={2} />
-              <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{z.n}</text>
-              <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, fill: dark ? 'rgba(255,255,255,.9)' : 'var(--neutral-600)' }}>{z.c}</text>
-            </g>
-          );
-        })}
-      </svg>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, justifyContent: 'center' }}>
-        <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Menos casos</span>
-        <div style={{ display: 'flex', gap: 3 }}>
-          {colorScale.map((c, i) => <span key={i} style={{ width: 26, height: 10, background: c, borderRadius: 2, display: 'inline-block' }} />)}
+    <div className="map-row" style={{ alignItems: 'stretch' }}>
+      <div className="map-svg-wrap" style={{ display: 'flex', flexDirection: 'column' }}>
+        <svg viewBox="-14 -14 213 220" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', maxHeight: 380, display: 'block' }}>
+          <path d={NARINO_PATH} fill="var(--neutral-100)" stroke="var(--border-default)" strokeWidth={1.4} strokeLinejoin="round" />
+          {narinoDistricts.map((d) => {
+            const r = 6 + (d.c / maxC) * 11;
+            const dark = bucket(d.c) >= 3;
+            return (
+              <g key={d.n}>
+                <circle cx={d.x} cy={d.y} r={r} fill={colorScale[bucket(d.c)]} fillOpacity={0.92} stroke="#fff" strokeWidth={1.6} />
+                <text x={d.x} y={d.y + 3.5} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{d.c}</text>
+              </g>
+            );
+          })}
+        </svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, justifyContent: 'center' }}>
+          <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Menos casos</span>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {colorScale.map((c, i) => <span key={i} style={{ width: 26, height: 10, background: c, borderRadius: 2, display: 'inline-block' }} />)}
+          </div>
+          <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Más casos</span>
         </div>
-        <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Más casos</span>
+      </div>
+      <div className="map-sidebar" style={{ justifyContent: 'flex-start', gap: 10 }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--text-strong)' }}>Casos confirmados por distrito</div>
+        {ranked.map((d) => (
+          <div key={d.n} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 104, fontSize: 12.5, color: 'var(--text-strong)', fontWeight: 600, whiteSpace: 'nowrap' }}>{d.n}</div>
+            <div style={{ flex: 1, height: 10, background: 'var(--neutral-100)', borderRadius: 5, overflow: 'hidden' }}>
+              <div style={{ width: `${(d.c / maxC) * 100}%`, height: '100%', background: colorScale[bucket(d.c)], borderRadius: 5 }} />
+            </div>
+            <div style={{ width: 26, textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: 12.5, fontWeight: 600, color: 'var(--text-muted)' }}>{d.c}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -284,6 +298,21 @@ export function DashboardPage() {
         ))}
       </div>
 
+      {/* Line charts · nacional (encima del mapa) */}
+      <div className="dash-filter-label" style={{ marginBottom: -6 }}>Tendencia · total nacional (Colombia)</div>
+      <div className="charts-2col">
+        <div className="chart-card">
+          <p className="chart-title">Casos por 1.000 habitantes</p>
+          <p className="chart-sub">Incidencia · {trendSub}</p>
+          <LineChart data={incData} max={incMax} color="var(--blue-500)" id="inc" />
+        </div>
+        <div className="chart-card">
+          <p className="chart-title">Tasa de positividad</p>
+          <p className="chart-sub">% de pruebas positivas · {trendSub}</p>
+          <LineChart data={posData} max={16} color="var(--status-positive-500)" id="pos" />
+        </div>
+      </div>
+
       {/* Colombia map + sidebar */}
       <div className="chart-card">
         <p className="chart-title">Casos por región</p>
@@ -328,21 +357,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Line charts · nacional */}
-      <div className="dash-filter-label" style={{ marginBottom: -6 }}>Tendencia · total nacional (Colombia)</div>
-      <div className="charts-2col">
-        <div className="chart-card">
-          <p className="chart-title">Casos por 1.000 habitantes</p>
-          <p className="chart-sub">Incidencia · {trendSub}</p>
-          <LineChart data={incData} max={incMax} color="var(--blue-500)" id="inc" />
-        </div>
-        <div className="chart-card">
-          <p className="chart-title">Tasa de positividad</p>
-          <p className="chart-sub">% de pruebas positivas · {trendSub}</p>
-          <LineChart data={posData} max={16} color="var(--status-positive-500)" id="pos" />
-        </div>
-      </div>
-
       {/* Line charts · regional */}
       <div className="dash-filter-label" style={{ marginBottom: -6 }}>Tendencia · región {region}</div>
       <div className="charts-2col">
@@ -358,24 +372,25 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Choropleth + bar charts */}
+      {/* Mapa de distritos de Nariño (forma real) + desglose */}
+      <div className="chart-card">
+        <p className="chart-title">Casos por distrito · Nariño</p>
+        <p className="chart-sub">Intensidad de casos confirmados sobre el mapa del departamento · acumulado 2026</p>
+        <NarinoDistrictMap />
+      </div>
+
+      {/* Grupo de edad/sexo + PDR por tipo de búsqueda */}
       <div className="charts-2col">
-        <div className="chart-card">
-          <p className="chart-title">Casos por distrito · Nariño</p>
-          <p className="chart-sub">Intensidad de casos confirmados · acumulado 2026</p>
-          <Choropleth />
-        </div>
         <div className="chart-card">
           <p className="chart-title">Casos por grupo de edad y sexo</p>
           <p className="chart-sub">Distribución de casos confirmados · acumulado 2026</p>
           <AgeSexChart />
         </div>
-      </div>
-
-      <div className="chart-card">
-        <p className="chart-title">Resultado PDR por tipo de búsqueda</p>
-        <p className="chart-sub">Pruebas realizadas según la estrategia de búsqueda · acumulado 2026</p>
-        <PdrBusquedaChart />
+        <div className="chart-card">
+          <p className="chart-title">Resultado PDR por tipo de búsqueda</p>
+          <p className="chart-sub">Pruebas realizadas según la estrategia de búsqueda · acumulado 2026</p>
+          <PdrBusquedaChart />
+        </div>
       </div>
     </div>
   );
