@@ -646,3 +646,70 @@ pre.code-body {
   .stat-cards, .metrics-grid, .filters-grid { grid-template-columns: 1fr; }
   .upload-actions { flex-direction: column; }
 }
+
+/* ── QR modal (tomar foto con el celular) ── */
+.spinner-sm {
+  width: 16px; height: 16px; border-width: 2px;
+  display: inline-block; vertical-align: middle;
+}
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(20, 34, 30, 0.42);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  position: relative;
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 26px 24px;
+  width: 100%; max-width: 380px;
+  text-align: center;
+}
+.modal-close {
+  position: absolute; top: 12px; right: 14px;
+  border: none; background: transparent; cursor: pointer;
+  font-size: 24px; line-height: 1; color: var(--text-muted);
+}
+.qr-frame {
+  display: inline-flex; padding: 14px;
+  background: #fff; border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.qr-status { margin: 16px 0 4px; font-size: 13.5px; }
+.qr-waiting { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); }
+.qr-count { display: inline-flex; align-items: center; gap: 6px; color: var(--green-600, var(--green-500)); font-weight: 600; }
+.qr-thumbs {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  margin: 12px 0 4px;
+}
+.qr-thumbs img {
+  width: 54px; height: 54px; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border-subtle);
+}
+.qr-actions { display: flex; gap: 10px; margin-top: 18px; }
+.qr-actions .btn { flex: 1; justify-content: center; }
+
+/* ── Mobile photo page (opened on the phone via QR) ── */
+.mobile-page {
+  min-height: 100vh; background: var(--surface-page);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.mobile-card {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 30px 24px;
+  width: 100%; max-width: 420px;
+  text-align: center;
+}
+.btn-block { width: 100%; justify-content: center; }
+.mobile-sent {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 18px; padding: 9px 14px;
+  background: var(--status-negative-50, var(--green-100));
+  color: var(--green-600, var(--green-500)); font-weight: 600;
+  border-radius: var(--radius-pill, 999px); font-size: 13.5px;
+}

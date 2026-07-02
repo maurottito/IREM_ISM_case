@@ -220,11 +220,23 @@ function NarinoDistrictMap() {
 }
 
 // ── StatCard · totales nacionales (Colombia) ─────────────────────
-const statCards = [
-  { label: 'Casos confirmados', value: '6.842', delta: '+7.4%', trend: 'up' },
-  { label: 'Tasa de positividad', value: '11.8%', delta: '-0.9%', trend: 'down' },
-  { label: 'Casos por 1.000 hab', value: '2.9', delta: '+0.3', trend: 'up' },
-  { label: 'Localidades activas', value: '110', delta: 'de 180', trend: 'flat' },
+// Dos juegos de cifras coherentes: la ventana de 12 semanas y el acumulado
+// del año. La base poblacional (~2,36 M) se mantiene entre ambos, por eso
+// «casos» y «casos por 1.000 hab» escalan juntos al pasar de semanas a año.
+type StatCard = { label: string; value: string; delta: string; trend: 'up' | 'down' | 'flat'; note: string };
+
+const statCardsWeeks: StatCard[] = [
+  { label: 'Casos confirmados', value: '6.842', delta: '+7.4%', trend: 'up', note: 'vs. semana anterior' },
+  { label: 'Tasa de positividad', value: '11.8%', delta: '-0.9%', trend: 'down', note: 'vs. semana anterior' },
+  { label: 'Casos por 1.000 hab', value: '2.9', delta: '+0.3', trend: 'up', note: 'vs. semana anterior' },
+  { label: 'Localidades activas', value: '110', delta: '+4', trend: 'up', note: 'de 180 · vs. semana anterior' },
+];
+
+const statCardsYear: StatCard[] = [
+  { label: 'Casos confirmados', value: '29.640', delta: '+5.2%', trend: 'up', note: 'vs. mes anterior' },
+  { label: 'Tasa de positividad', value: '12.3%', delta: '+0.4%', trend: 'up', note: 'vs. mes anterior' },
+  { label: 'Casos por 1.000 hab', value: '12.6', delta: '+0.6', trend: 'up', note: 'vs. mes anterior' },
+  { label: 'Localidades activas', value: '142', delta: '+6', trend: 'up', note: 'de 180 · vs. mes anterior' },
 ];
 
 export const regionOptions = ['Nariño', 'Chocó', 'Cauca', 'Valle del Cauca', 'Antioquia', 'Córdoba', 'Amazonas', 'Putumayo', 'Guaviare', 'Vichada'];
@@ -240,7 +252,7 @@ export function DashboardPage({ region, period }: { region: string; period: Dash
   const posData = isYear ? positivityYear : positivityData;
   const incMax = isYear ? 5 : 4;
   const trendSub = isYear ? 'por mes · año 2026' : 'últimas 12 semanas';
-  const compareLabel = isYear ? 'vs. mes anterior' : 'vs. semana anterior';
+  const statCards = isYear ? statCardsYear : statCardsWeeks;
 
   // Series regionales: escalan la curva nacional según la región seleccionada
   const scaleSeries = (s: { l: string; v: number; hi?: boolean }[], f: number) =>
@@ -263,7 +275,7 @@ export function DashboardPage({ region, period }: { region: string; period: Dash
             <div className="stat-value">{s.value}</div>
             <div className="stat-footer">
               <span className={s.trend === 'up' ? 'delta-up' : s.trend === 'down' ? 'delta-down' : 'delta-flat'}>{s.delta}</span>
-              <span style={{ color: 'var(--text-faint)' }}>{compareLabel}</span>
+              <span style={{ color: 'var(--text-faint)' }}>{s.note}</span>
             </div>
           </div>
         ))}

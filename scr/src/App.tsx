@@ -5,6 +5,7 @@ import { DashboardPage, regionOptions } from './features/dashboard/DashboardPage
 import type { DashPeriod } from './features/dashboard/DashboardPage';
 import { SearchPage } from './features/search/SearchPage';
 import { UploadPage } from './features/upload/UploadPage';
+import { MobilePhotoPage } from './features/upload/MobilePhotoPage';
 import { identities } from './data/mock';
 import { Toast } from './components/Toast';
 import type { AppRoute, AppView, CaseRecord, UserRole } from './types';
@@ -39,7 +40,14 @@ const LoginIcon = () => (
   </svg>
 );
 
+// If opened via the QR link (/?cam=<session>), show the phone-only camera page
+// instead of the full app. This is deterministic per page load, so the early
+// return before the hooks below is safe.
+const camSession = new URLSearchParams(window.location.search).get('cam');
+
 export default function App() {
+  if (camSession) return <MobilePhotoPage sessionId={camSession} />;
+
   const [view, setView] = useState<AppView>('app');
   const [role, setRole] = useState<UserRole>('guest');
   const [route, setRoute] = useState<AppRoute>('dashboard');

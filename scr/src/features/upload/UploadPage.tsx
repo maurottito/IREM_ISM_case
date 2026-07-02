@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { reviewRows } from '../../data/mock';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { CaseRecord, UploadStep } from '../../types';
@@ -56,6 +57,8 @@ function fileToImagePart(file: File): Promise<{ media_type: string; data: string
   });
 }
 
+type PhonePhoto = { pathname: string; uploadedAt?: string; size?: number };
+
 interface UploadPageProps {
   onValidate: (rows: CaseRecord[]) => void;
 }
@@ -67,12 +70,44 @@ export function UploadPage({ onValidate }: UploadPageProps) {
   const [statusMsg, setStatusMsg] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
   const exploreRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
+  // QR pairing with a phone: generate a session id, show the QR, poll for photos.
+  const [qrOpen, setQrOpen] = useState(false);
+  const [sessionId, setSessionId] = useState('');
+  const [phonePhotos, setPhonePhotos] = useState<PhonePhoto[]>([]);
+
+  const camUrl = sessionId ? `${window.location.origin}/?cam=${sessionId}` : '';
 
   const needsReviewCount = rows.filter((r) => r.needsReview).length;
 
   const updateRow = (i: number, field: keyof CaseRecord, value: string) => {
     setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  };
+
+  // Send already-decoded images to the OCR endpoint and land on the review step.
+  const runOcr = async (images: { media_type: string; data: string }[]) => {
+    try {
+      setStatusMsg('Leyendo las fotos con OCR…');
+      const res = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Error ${res.status}`);
+      }
+      const data = await res.json();
+      const parsed: CaseRecord[] = Array.isArray(data.rows) ? data.rows : [];
+      if (parsed.length === 0) throw new Error('No se detectaron registros en las imágenes.');
+      setRows(parsed);
+      setStep('review');
+    } catch (e) {
+      // Graceful fallback so the demo stays usable if the OCR endpoint/key is unavailable.
+      const detail = e instanceof Error ? e.message : String(e);
+      setRows(reviewRows);
+      setNotice(`No se pudo ejecutar el OCR (${detail}). Mostrando datos de ejemplo para que puedas continuar la revisión.`);
+      setStep('review');
+    }
   };
 
   const handleFiles = async (fileList: FileList | null) => {
@@ -86,33 +121,77 @@ export function UploadPage({ onValidate }: UploadPageProps) {
 
     try {
       const images = await Promise.all(files.map(fileToImagePart));
-      setStatusMsg('Leyendo las fotos con OCR…');
+      await runOcr(images);
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      setRows(reviewRows);
+      setNotice(`No se pudo procesar las imágenes (${detail}). Mostrando datos de ejemplo para que puedas continuar la revisión.`);
+      setStep('review');
+    }
+  };
 
-      const res = await fetch('/api/ocr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images }),
-      });
+  // Open the QR modal with a fresh pairing session.
+  const openQr = () => {
+    const id = `s${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+    setSessionId(id);
+    setPhonePhotos([]);
+    setQrOpen(true);
+  };
 
+  const closeQr = () => {
+    setQrOpen(false);
+    if (sessionId) fetch(`/api/mobile-photos?session=${sessionId}`, { method: 'DELETE' }).catch(() => {});
+  };
+
+  // Pull the phone photos into the OCR flow, then wipe them from storage.
+  const importFromPhone = async () => {
+    if (phonePhotos.length === 0) return;
+    const count = phonePhotos.length;
+    setQrOpen(false);
+    setImageCount(count);
+    setNotice(null);
+    setStatusMsg(`Descargando ${count} ${count === 1 ? 'foto' : 'fotos'} del teléfono…`);
+    setStep('processing');
+    try {
+      const res = await fetch(`/api/mobile-fetch?session=${sessionId}`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Error ${res.status}`);
       }
-
       const data = await res.json();
-      const parsed: CaseRecord[] = Array.isArray(data.rows) ? data.rows : [];
-      if (parsed.length === 0) throw new Error('No se detectaron registros en las imágenes.');
-
-      setRows(parsed);
-      setStep('review');
+      const images = (Array.isArray(data.photos) ? data.photos : []).map(
+        (p: { dataBase64: string; contentType?: string }) => ({ media_type: p.contentType || 'image/jpeg', data: p.dataBase64 }),
+      );
+      if (images.length === 0) throw new Error('No se recibieron fotos del teléfono.');
+      await runOcr(images);
     } catch (e) {
-      // Graceful fallback so the demo stays usable if the OCR endpoint/key is unavailable.
       const detail = e instanceof Error ? e.message : String(e);
       setRows(reviewRows);
-      setNotice(`No se pudo ejecutar el OCR (${detail}). Mostrando datos de ejemplo para que puedas continuar la revisión.`);
+      setNotice(`No se pudieron traer las fotos del teléfono (${detail}). Mostrando datos de ejemplo para que puedas continuar la revisión.`);
       setStep('review');
+    } finally {
+      fetch(`/api/mobile-photos?session=${sessionId}`, { method: 'DELETE' }).catch(() => {});
     }
   };
+
+  // While the QR modal is open, poll for photos uploaded from the phone.
+  useEffect(() => {
+    if (!qrOpen || !sessionId) return;
+    let active = true;
+    const tick = async () => {
+      try {
+        const res = await fetch(`/api/mobile-photos?session=${sessionId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.photos)) setPhonePhotos(data.photos);
+      } catch {
+        /* keep polling */
+      }
+    };
+    tick();
+    const iv = setInterval(tick, 2500);
+    return () => { active = false; clearInterval(iv); };
+  }, [qrOpen, sessionId]);
 
   if (step === 'idle') {
     return (
@@ -138,25 +217,45 @@ export function UploadPage({ onValidate }: UploadPageProps) {
                 style={{ display: 'none' }}
                 onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
               />
-              <input
-                ref={cameraRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                style={{ display: 'none' }}
-                onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
-              />
               <button type="button" className="btn btn-primary" onClick={() => exploreRef.current?.click()}>
                 <FolderIcon /> Explorar imágenes
               </button>
-              <button type="button" className="btn btn-outline" onClick={() => cameraRef.current?.click()}>
-                <CameraIcon /> Tomar foto
+              <button type="button" className="btn btn-outline" onClick={openQr}>
+                <CameraIcon /> Tomar foto con el celular
               </button>
             </div>
             <p className="upload-hint">Máximo 50 imágenes por carga · Selecciona varias a la vez</p>
           </div>
         </div>
+        {qrOpen && (
+          <div className="modal-overlay" role="dialog" aria-modal="true" onClick={closeQr}>
+            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="modal-close" onClick={closeQr} aria-label="Cerrar">×</button>
+              <p className="upload-title" style={{ marginBottom: 4 }}>Toma las fotos con tu celular</p>
+              <p className="upload-sub" style={{ margin: '0 auto 16px', maxWidth: 340 }}>
+                Escanea este código QR con la cámara de tu teléfono. Se abrirá una página para tomar las fotos del formato y enviarlas aquí.
+              </p>
+              <div className="qr-frame">
+                {camUrl && <QRCodeCanvas value={camUrl} size={200} includeMargin marginSize={2} level="M" />}
+              </div>
+              <div className="qr-status">
+                {phonePhotos.length === 0 ? (
+                  <span className="qr-waiting"><span className="spinner spinner-sm" /> Esperando fotos del teléfono…</span>
+                ) : (
+                  <span className="qr-count">
+                    <CheckIcon /> {phonePhotos.length} {phonePhotos.length === 1 ? 'foto recibida' : 'fotos recibidas'}
+                  </span>
+                )}
+              </div>
+              <div className="qr-actions">
+                <button type="button" className="btn btn-outline" onClick={closeQr}>Cancelar</button>
+                <button type="button" className="btn btn-primary" onClick={importFromPhone} disabled={phonePhotos.length === 0}>
+                  <CheckIcon /> Usar {phonePhotos.length > 0 ? `${phonePhotos.length} ` : ''}{phonePhotos.length === 1 ? 'foto' : 'fotos'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
