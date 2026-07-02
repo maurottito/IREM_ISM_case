@@ -164,13 +164,13 @@ function ColombiaMap({ selected }: { selected: string }) {
 
 // ── Choropleth of local zones ────────────────────────────────────
 const choroplethZones = [
-  { n: 'Llorente', c: 62, path: 'M250,40 L340,55 L360,120 L300,160 L235,130 L230,75 Z' },
-  { n: 'Espriella', c: 48, path: 'M150,70 L230,75 L235,130 L180,165 L120,135 L120,90 Z' },
+  { n: 'Barbacoas', c: 62, path: 'M250,40 L340,55 L360,120 L300,160 L235,130 L230,75 Z' },
+  { n: 'Magüí Payán', c: 48, path: 'M150,70 L230,75 L235,130 L180,165 L120,135 L120,90 Z' },
   { n: 'Tumaco', c: 71, path: 'M60,140 L120,135 L180,165 L165,235 L95,255 L45,205 Z' },
-  { n: 'San Luis', c: 33, path: 'M180,165 L235,130 L300,160 L290,225 L230,250 L165,235 Z' },
-  { n: 'Chajal', c: 55, path: 'M300,160 L360,120 L395,175 L360,240 L290,225 Z' },
-  { n: 'Candelillas', c: 24, path: 'M95,255 L165,235 L230,250 L215,315 L140,330 L85,295 Z' },
-  { n: 'Imbilí', c: 40, path: 'M230,250 L290,225 L360,240 L350,305 L280,325 L215,315 Z' },
+  { n: 'Olaya Herrera', c: 33, path: 'M180,165 L235,130 L300,160 L290,225 L230,250 L165,235 Z' },
+  { n: 'Roberto Payán', c: 55, path: 'M300,160 L360,120 L395,175 L360,240 L290,225 Z' },
+  { n: 'El Charco', c: 24, path: 'M95,255 L165,235 L230,250 L215,315 L140,330 L85,295 Z' },
+  { n: 'Fco. Pizarro', c: 40, path: 'M230,250 L290,225 L360,240 L350,305 L280,325 L215,315 Z' },
 ];
 const colorScale = ['#EAF3DC', '#C9E29B', '#92BF4E', '#E69A29', '#D64545'];
 const bucket = (c: number) => c >= 60 ? 4 : c >= 45 ? 3 : c >= 30 ? 2 : c >= 15 ? 1 : 0;
@@ -189,7 +189,7 @@ function Choropleth() {
           return (
             <g key={i}>
               <path d={z.path} fill={fill} stroke="#fff" strokeWidth={2} />
-              <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{z.n}</text>
+              <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{z.n}</text>
               <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, fill: dark ? 'rgba(255,255,255,.9)' : 'var(--neutral-600)' }}>{z.c}</text>
             </g>
           );
@@ -229,6 +229,16 @@ export function DashboardPage() {
   const incMax = isYear ? 5 : 4;
   const trendSub = isYear ? 'por mes · año 2026' : 'últimas 12 semanas';
   const compareLabel = isYear ? 'vs. mes anterior' : 'vs. semana anterior';
+
+  // Series regionales: escalan la curva nacional según la región seleccionada
+  const scaleSeries = (s: { l: string; v: number; hi?: boolean }[], f: number) =>
+    s.map((d) => ({ ...d, v: Math.round(d.v * f * 10) / 10 }));
+  const incFactor = Math.min(1.6, Math.max(0.5, info.cases / 1000));
+  const posFactor = (parseFloat(info.pos) || 12.4) / 12.4;
+  const regInc = scaleSeries(incData, incFactor);
+  const regPos = scaleSeries(posData, posFactor);
+  const regIncMax = Math.max(incMax, Math.ceil(Math.max(...regInc.map((d) => d.v))));
+  const regPosMax = Math.max(8, Math.ceil(Math.max(...regPos.map((d) => d.v)) * 1.1));
 
   return (
     <div className="page-content wide">
@@ -318,7 +328,8 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Line charts */}
+      {/* Line charts · nacional */}
+      <div className="dash-filter-label" style={{ marginBottom: -6 }}>Tendencia · total nacional (Colombia)</div>
       <div className="charts-2col">
         <div className="chart-card">
           <p className="chart-title">Casos por 1.000 habitantes</p>
@@ -332,10 +343,25 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Line charts · regional */}
+      <div className="dash-filter-label" style={{ marginBottom: -6 }}>Tendencia · región {region}</div>
+      <div className="charts-2col">
+        <div className="chart-card">
+          <p className="chart-title">Casos por 1.000 habitantes · {region}</p>
+          <p className="chart-sub">Incidencia · {trendSub}</p>
+          <LineChart data={regInc} max={regIncMax} color="var(--blue-500)" id="inc-reg" />
+        </div>
+        <div className="chart-card">
+          <p className="chart-title">Tasa de positividad · {region}</p>
+          <p className="chart-sub">% de pruebas positivas · {trendSub}</p>
+          <LineChart data={regPos} max={regPosMax} color="var(--status-positive-500)" id="pos-reg" />
+        </div>
+      </div>
+
       {/* Choropleth + bar charts */}
       <div className="charts-2col">
         <div className="chart-card">
-          <p className="chart-title">Casos por localidad · Tumaco</p>
+          <p className="chart-title">Casos por distrito · Nariño</p>
           <p className="chart-sub">Intensidad de casos confirmados · acumulado 2026</p>
           <Choropleth />
         </div>
