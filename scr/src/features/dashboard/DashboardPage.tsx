@@ -161,36 +161,138 @@ function ColombiaMap({ selected }: { selected: string }) {
   );
 }
 
-// ── District bubble map over the real Nariño department shape ─────
-const NARINO_PATH = 'M89,8L92,11L94,14L96,17L98,19L101,22L104,26L106,29L107,33L109,35L113,37L116,39L119,40L123,40L128,40L131,39L134,38L138,39L139,42L139,46L141,49L143,47L146,48L146,52L147,56L150,58L150,62L148,64L146,66L144,68L143,71L143,75L142,78L140,81L143,82L147,82L150,83L153,82L157,82L161,82L165,81L167,79L171,81L173,83L176,85L179,86L181,88L184,89L185,92L184,96L182,99L181,103L183,106L184,110L182,112L179,114L176,116L173,118L169,118L166,120L162,121L160,123L161,127L161,131L162,135L162,141L163,146L165,148L164,151L165,156L166,160L167,164L165,166L162,167L158,167L159,171L158,174L158,178L160,180L161,183L161,187L160,190L155,190L152,191L149,192L144,190L141,189L137,190L134,191L132,188L131,185L129,182L127,179L126,175L127,172L125,169L123,167L118,166L115,164L113,161L113,157L114,154L113,151L109,151L105,152L102,153L98,154L95,155L91,155L86,153L83,151L81,149L78,147L74,145L71,143L69,141L66,139L64,136L61,135L56,134L53,132L52,129L49,127L47,124L43,122L39,122L36,121L33,119L31,116L28,114L26,111L23,108L19,106L17,103L14,100L13,97L10,98L9,95L7,93L4,91L1,89L0,85L2,82L4,80L6,78L9,75L11,71L14,70L19,70L23,71L29,72L33,72L36,73L39,71L38,68L39,64L37,62L36,59L35,56L34,53L30,53L29,48L30,44L34,44L37,43L38,40L37,37L35,35L34,32L33,29L34,25L36,21L37,18L39,16L41,14L45,12L47,10L50,7L52,11L54,14L57,18L56,15L57,11L58,8L60,10L62,8L64,6L66,3L68,1L71,0L74,1L75,4L76,7L80,6L82,4L84,0L86,3L88,5L89,8Z';
+// ── District bubble map over the real department shape ────────────
+// Fake per-region data: each region lists districts with a case count and a
+// fractional position (fx, fy in 0..1) inside the department's bounding box.
+type District = { n: string; c: number; fx: number; fy: number };
 
-const narinoDistricts = [
-  { n: 'Tumaco', c: 71, x: 30, y: 90 },
-  { n: 'Barbacoas', c: 62, x: 120, y: 90 },
-  { n: 'Roberto Payán', c: 55, x: 80, y: 120 },
-  { n: 'Magüí Payán', c: 48, x: 110, y: 150 },
-  { n: 'Fco. Pizarro', c: 40, x: 135, y: 174 },
-  { n: 'Olaya Herrera', c: 33, x: 90, y: 54 },
-  { n: 'El Charco', c: 24, x: 55, y: 30 },
-];
+const regionDistricts: Record<string, District[]> = {
+  NARINO: [
+    { n: 'Tumaco', c: 71, fx: 0.16, fy: 0.82 },
+    { n: 'Barbacoas', c: 62, fx: 0.5, fy: 0.68 },
+    { n: 'Roberto Payán', c: 55, fx: 0.34, fy: 0.6 },
+    { n: 'Magüí Payán', c: 48, fx: 0.46, fy: 0.5 },
+    { n: 'Fco. Pizarro', c: 40, fx: 0.6, fy: 0.85 },
+    { n: 'Olaya Herrera', c: 33, fx: 0.4, fy: 0.3 },
+    { n: 'El Charco', c: 24, fx: 0.28, fy: 0.16 },
+  ],
+  'CHOCO': [
+    { n: 'Quibdó', c: 84, fx: 0.55, fy: 0.52 },
+    { n: 'Riosucio', c: 66, fx: 0.45, fy: 0.12 },
+    { n: 'Istmina', c: 52, fx: 0.52, fy: 0.66 },
+    { n: 'Alto Baudó', c: 45, fx: 0.35, fy: 0.6 },
+    { n: 'Bojayá', c: 38, fx: 0.48, fy: 0.34 },
+    { n: 'Condoto', c: 29, fx: 0.6, fy: 0.72 },
+    { n: 'Tadó', c: 21, fx: 0.68, fy: 0.62 },
+  ],
+  CAUCA: [
+    { n: 'Guapi', c: 58, fx: 0.16, fy: 0.55 },
+    { n: 'Timbiquí', c: 49, fx: 0.22, fy: 0.42 },
+    { n: 'López de Micay', c: 41, fx: 0.3, fy: 0.3 },
+    { n: 'Argelia', c: 34, fx: 0.5, fy: 0.72 },
+    { n: 'El Tambo', c: 27, fx: 0.55, fy: 0.55 },
+    { n: 'Popayán', c: 19, fx: 0.64, fy: 0.5 },
+    { n: 'S. de Quilichao', c: 14, fx: 0.72, fy: 0.35 },
+  ],
+  'VALLE DEL CAUCA': [
+    { n: 'Buenaventura', c: 77, fx: 0.3, fy: 0.5 },
+    { n: 'Dagua', c: 34, fx: 0.5, fy: 0.45 },
+    { n: 'Cali', c: 26, fx: 0.6, fy: 0.55 },
+    { n: 'Jamundí', c: 18, fx: 0.58, fy: 0.68 },
+    { n: 'El Cairo', c: 15, fx: 0.4, fy: 0.2 },
+    { n: 'Bolívar', c: 12, fx: 0.52, fy: 0.3 },
+  ],
+  ANTIOQUIA: [
+    { n: 'El Bagre', c: 63, fx: 0.62, fy: 0.28 },
+    { n: 'Zaragoza', c: 55, fx: 0.6, fy: 0.34 },
+    { n: 'Cáceres', c: 47, fx: 0.55, fy: 0.3 },
+    { n: 'Tarazá', c: 40, fx: 0.5, fy: 0.35 },
+    { n: 'Turbo', c: 36, fx: 0.2, fy: 0.25 },
+    { n: 'Nechí', c: 28, fx: 0.66, fy: 0.24 },
+    { n: 'Segovia', c: 22, fx: 0.6, fy: 0.42 },
+  ],
+  CORDOBA: [
+    { n: 'Tierralta', c: 51, fx: 0.45, fy: 0.75 },
+    { n: 'Pto. Libertador', c: 44, fx: 0.55, fy: 0.8 },
+    { n: 'Montelíbano', c: 37, fx: 0.6, fy: 0.72 },
+    { n: 'Ayapel', c: 30, fx: 0.72, fy: 0.68 },
+    { n: 'Valencia', c: 23, fx: 0.35, fy: 0.68 },
+    { n: 'Montería', c: 16, fx: 0.45, fy: 0.5 },
+    { n: 'Pto. Escondido', c: 12, fx: 0.28, fy: 0.35 },
+  ],
+  AMAZONAS: [
+    { n: 'Leticia', c: 39, fx: 0.72, fy: 0.85 },
+    { n: 'Puerto Nariño', c: 31, fx: 0.6, fy: 0.8 },
+    { n: 'Tarapacá', c: 24, fx: 0.78, fy: 0.6 },
+    { n: 'La Chorrera', c: 18, fx: 0.5, fy: 0.5 },
+    { n: 'La Pedrera', c: 13, fx: 0.6, fy: 0.4 },
+    { n: 'Pto. Santander', c: 9, fx: 0.45, fy: 0.35 },
+  ],
+  PUTUMAYO: [
+    { n: 'Puerto Asís', c: 57, fx: 0.5, fy: 0.55 },
+    { n: 'Valle del Guamuez', c: 48, fx: 0.32, fy: 0.62 },
+    { n: 'Orito', c: 40, fx: 0.35, fy: 0.52 },
+    { n: 'San Miguel', c: 33, fx: 0.4, fy: 0.72 },
+    { n: 'Pto. Leguízamo', c: 27, fx: 0.75, fy: 0.7 },
+    { n: 'Mocoa', c: 20, fx: 0.25, fy: 0.3 },
+    { n: 'Puerto Caicedo', c: 15, fx: 0.42, fy: 0.45 },
+  ],
+  GUAVIARE: [
+    { n: 'San José', c: 45, fx: 0.3, fy: 0.35 },
+    { n: 'El Retorno', c: 33, fx: 0.35, fy: 0.45 },
+    { n: 'Calamar', c: 25, fx: 0.45, fy: 0.55 },
+    { n: 'Miraflores', c: 18, fx: 0.6, fy: 0.7 },
+  ],
+  VICHADA: [
+    { n: 'Cumaribo', c: 42, fx: 0.45, fy: 0.7 },
+    { n: 'Puerto Carreño', c: 30, fx: 0.82, fy: 0.2 },
+    { n: 'La Primavera', c: 23, fx: 0.6, fy: 0.35 },
+    { n: 'Santa Rosalía', c: 15, fx: 0.4, fy: 0.5 },
+  ],
+};
+
 const colorScale = ['#EAF3DC', '#C9E29B', '#92BF4E', '#E69A29', '#D64545'];
 const bucket = (c: number) => c >= 60 ? 4 : c >= 45 ? 3 : c >= 30 ? 2 : c >= 15 ? 1 : 0;
 
-function NarinoDistrictMap() {
-  const maxC = Math.max(...narinoDistricts.map((d) => d.c));
-  const ranked = [...narinoDistricts].sort((a, b) => b.c - a.c);
+// Bounding box of an SVG path made only of M/L absolute "x,y" pairs.
+function pathBBox(d: string) {
+  const nums = (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    const x = nums[i], y = nums[i + 1];
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  }
+  return { minX, minY, w: maxX - minX, h: maxY - minY };
+}
+
+function RegionDistrictMap({ region }: { region: string }) {
+  const key = normRegion(region);
+  const dep = COLOMBIA_DEPTS.deps.find((d) => normRegion(d.name) === key);
+  const districts = regionDistricts[key] ?? [];
+  if (!dep || districts.length === 0) {
+    return <div style={{ padding: 24, color: 'var(--text-muted)' }}>Aún no hay datos de distritos para {region}.</div>;
+  }
+  const bb = pathBBox(dep.d);
+  const S = Math.max(bb.w, bb.h);      // scale reference so radii/fonts fit any department size
+  const pad = S * 0.12;
+  const vb = `${bb.minX - pad} ${bb.minY - pad} ${bb.w + pad * 2} ${bb.h + pad * 2}`;
+  const maxC = Math.max(...districts.map((d) => d.c));
+  const ranked = [...districts].sort((a, b) => b.c - a.c);
+  const px = (d: District) => bb.minX + d.fx * bb.w;
+  const py = (d: District) => bb.minY + d.fy * bb.h;
   return (
     <div className="map-row" style={{ alignItems: 'stretch' }}>
       <div className="map-svg-wrap" style={{ display: 'flex', flexDirection: 'column' }}>
-        <svg viewBox="-14 -14 213 220" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', maxHeight: 380, display: 'block' }}>
-          <path d={NARINO_PATH} fill="var(--neutral-100)" stroke="var(--border-default)" strokeWidth={1.4} strokeLinejoin="round" />
-          {narinoDistricts.map((d) => {
-            const r = 6 + (d.c / maxC) * 11;
+        <svg viewBox={vb} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', maxHeight: 380, display: 'block' }}>
+          <path d={dep.d} fill="var(--neutral-100)" stroke="var(--border-default)" strokeWidth={S * 0.006} strokeLinejoin="round" />
+          {districts.map((d) => {
+            const r = S * (0.035 + 0.032 * (d.c / maxC));
             const dark = bucket(d.c) >= 3;
             return (
               <g key={d.n}>
-                <circle cx={d.x} cy={d.y} r={r} fill={colorScale[bucket(d.c)]} fillOpacity={0.92} stroke="#fff" strokeWidth={1.6} />
-                <text x={d.x} y={d.y + 3.5} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{d.c}</text>
+                <circle cx={px(d)} cy={py(d)} r={r} fill={colorScale[bucket(d.c)]} fillOpacity={0.92} stroke="#fff" strokeWidth={S * 0.006} />
+                <text x={px(d)} y={py(d) + S * 0.012} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: S * 0.03, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{d.c}</text>
               </g>
             );
           })}
@@ -357,9 +459,9 @@ export function DashboardPage({ region, period }: { region: string; period: Dash
 
       {/* Mapa de distritos de Nariño (forma real) + desglose */}
       <div className="chart-card">
-        <p className="chart-title">Casos por distrito · Nariño</p>
+        <p className="chart-title">Casos por distrito · {region}</p>
         <p className="chart-sub">Intensidad de casos confirmados sobre el mapa del departamento · acumulado 2026</p>
-        <NarinoDistrictMap />
+        <RegionDistrictMap region={region} />
       </div>
 
       {/* Grupo de edad/sexo + PDR por tipo de búsqueda */}
