@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+env:
+  VERCEL_ORG_ID: team_UMPX2wTQ6lk67HubEu8gVmra
+  VERCEL_PROJECT_ID: prj_ZD2SK4M3sMjCgnJ6GidlSTEFj7eP
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,17 +20,17 @@ jobs:
           cache: npm
           cache-dependency-path: scr/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: scr
 
       - name: Build
-        run: npm run build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: scr
 
-      - name: Deploy to Vercel
-        run: npx vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: scr
-        env:
-          VERCEL_ORG_ID: team_UMPX2wTQ6lk67HubEu8gVmra
-          VERCEL_PROJECT_ID: prj_ZD2SK4M3sMjCgnJ6GidlSTEFj7eP
