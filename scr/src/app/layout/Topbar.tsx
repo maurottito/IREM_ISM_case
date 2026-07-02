@@ -1,9 +1,11 @@
 interface TopbarProps {
   title: string;
   description: string;
+  showSearch?: boolean;
+  actionLabel?: string;
 }
 
-export function Topbar({ title, description }: TopbarProps) {
+export function Topbar({ title, description, showSearch = true, actionLabel = 'Validar' }: TopbarProps) {
   return (
     <header className="topbar">
       <div>
@@ -11,8 +13,8 @@ export function Topbar({ title, description }: TopbarProps) {
         <p>{description}</p>
       </div>
       <div className="topbar-actions">
-        <input className="search-input" placeholder="Buscar ID de caso…" />
-        <button className="primary-button" type="button">Validar</button>
+        {showSearch ? <input className="search-input" placeholder="Buscar ID de caso…" /> : null}
+        <button className="primary-button" type="button">{actionLabel}</button>
       </div>
     </header>
   );

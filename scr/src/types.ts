@@ -1,5 +1,7 @@
 export type AppRoute = 'upload' | 'review' | 'search' | 'api' | 'dashboard';
 
+export type AppView = 'login' | 'app';
+
 export type UserRole = 'supervisor' | 'specialist' | 'manager';
 
 export interface NavItem {

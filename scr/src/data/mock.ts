@@ -1,7 +1,7 @@
 import type { CaseRecord, NavItem } from '../types';
 
 export const navItems: NavItem[] = [
-  { id: 'upload', label: 'Cargar registros', description: 'Fotos de formularios y prellenado asistido' },
+  { id: 'upload', label: 'Cargar registros', description: 'Fotos del formato y lectura asistida' },
   { id: 'review', label: 'Revisar y validar', description: 'Corrección manual antes de consolidar' },
   { id: 'search', label: 'Buscar y descargar', description: 'Filtros y exportación a Excel' },
   { id: 'api', label: 'Datos y API', description: 'Acceso para especialistas' },

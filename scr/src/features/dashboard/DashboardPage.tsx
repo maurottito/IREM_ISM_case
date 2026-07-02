@@ -8,7 +8,10 @@ const metrics = [
 export function DashboardPage() {
   return (
     <article className="panel dashboard-panel">
-      <h3>Panel epidemiológico</h3>
+      <div className="hero-heading">
+        <h3>Panel epidemiológico</h3>
+        <p>Resumen para gerencia con tendencia, territorio y lectura rápida.</p>
+      </div>
       <div className="metrics-grid">
         {metrics.map((metric) => (
           <div key={metric.label} className="metric-card">

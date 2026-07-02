@@ -1,7 +1,10 @@
 export function SearchPage() {
   return (
     <article className="panel search-panel">
-      <h3>Buscar y descargar</h3>
+      <div className="hero-heading">
+        <h3>Buscar y descargar</h3>
+        <p>Filtra el consolidado local y expórtalo a Excel para seguimiento operativo.</p>
+      </div>
       <div className="filters-grid">
         <label><span>Fecha inicio</span><input type="date" defaultValue="2026-06-01" /></label>
         <label><span>Fecha fin</span><input type="date" defaultValue="2026-06-30" /></label>

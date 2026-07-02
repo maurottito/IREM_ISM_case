@@ -12,8 +12,8 @@ export function Sidebar({ activeRoute, onRouteChange }: SidebarProps) {
       <div className="brand">
         <div className="brand-mark">ISM</div>
         <div>
-          <h1>Malaria pilot</h1>
-          <p>Supervisor workspace</p>
+          <h1>Vigilancia de malaria</h1>
+          <p>RMEI · workspace</p>
         </div>
       </div>
 
