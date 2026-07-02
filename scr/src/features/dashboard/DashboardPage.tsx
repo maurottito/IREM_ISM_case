@@ -254,9 +254,7 @@ const regionDistricts: Record<string, District[]> = {
 const colorScale = ['#EAF3DC', '#C9E29B', '#92BF4E', '#E69A29', '#D64545'];
 const bucket = (c: number) => c >= 60 ? 4 : c >= 45 ? 3 : c >= 30 ? 2 : c >= 15 ? 1 : 0;
 
-// ── SVG-path geometry helpers (paths are only M/L absolute "x,y" + Z) ──
-type Pt = { x: number; y: number };
-
+// Bounding box of an SVG path made only of M/L absolute "x,y" pairs.
 function pathBBox(d: string) {
   const nums = (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -268,77 +266,6 @@ function pathBBox(d: string) {
   return { minX, minY, w: maxX - minX, h: maxY - minY };
 }
 
-// Split a path into its subpath rings (a multipolygon department has several).
-function parseRings(d: string): Pt[][] {
-  const rings: Pt[][] = [];
-  for (const sub of d.split(/(?=M)/)) {
-    const nums = (sub.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
-    const ring: Pt[] = [];
-    for (let i = 0; i + 1 < nums.length; i += 2) ring.push({ x: nums[i], y: nums[i + 1] });
-    if (ring.length >= 3) rings.push(ring);
-  }
-  return rings;
-}
-
-function ringArea(r: Pt[]) {
-  let a = 0;
-  for (let i = 0; i < r.length; i++) { const p = r[i], q = r[(i + 1) % r.length]; a += p.x * q.y - q.x * p.y; }
-  return Math.abs(a) / 2;
-}
-
-function largestRing(rings: Pt[][]): Pt[] {
-  return rings.reduce((best, r) => (ringArea(r) > ringArea(best) ? r : best), rings[0] ?? []);
-}
-
-// Sutherland–Hodgman: clip a (possibly concave) subject polygon by one
-// half-plane {p : f(p) <= 0}. Applying the perpendicular-bisector half-planes
-// between a seed and every other seed yields that seed's Voronoi cell.
-function clipHalf(poly: Pt[], f: (p: Pt) => number): Pt[] {
-  if (poly.length === 0) return poly;
-  const out: Pt[] = [];
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i], b = poly[(i + 1) % poly.length];
-    const fa = f(a), fb = f(b);
-    if (fa <= 0) out.push(a);
-    if ((fa <= 0) !== (fb <= 0)) {
-      const t = fa / (fa - fb);
-      out.push({ x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) });
-    }
-  }
-  return out;
-}
-
-// Voronoi cell of seed i, clipped to the department polygon.
-function voronoiCell(subject: Pt[], seeds: Pt[], i: number): Pt[] {
-  let cell = subject;
-  const Pi = seeds[i];
-  for (let j = 0; j < seeds.length && cell.length; j++) {
-    if (j === i) continue;
-    const Pj = seeds[j];
-    const dx = Pj.x - Pi.x, dy = Pj.y - Pi.y;
-    const c = (Pj.x * Pj.x + Pj.y * Pj.y - Pi.x * Pi.x - Pi.y * Pi.y) / 2;
-    cell = clipHalf(cell, (p) => p.x * dx + p.y * dy - c); // keep side nearer to Pi
-  }
-  return cell;
-}
-
-function polygonCentroid(poly: Pt[]): Pt {
-  let a = 0, cx = 0, cy = 0;
-  for (let i = 0; i < poly.length; i++) {
-    const p = poly[i], q = poly[(i + 1) % poly.length];
-    const cross = p.x * q.y - q.x * p.y;
-    a += cross; cx += (p.x + q.x) * cross; cy += (p.y + q.y) * cross;
-  }
-  if (Math.abs(a) < 1e-6) {
-    const n = poly.length || 1;
-    return { x: poly.reduce((s, p) => s + p.x, 0) / n, y: poly.reduce((s, p) => s + p.y, 0) / n };
-  }
-  a *= 0.5;
-  return { x: cx / (6 * a), y: cy / (6 * a) };
-}
-
-const ringToPath = (r: Pt[]) => (r.length ? 'M' + r.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('L') + 'Z' : '');
-
 function RegionDistrictMap({ region }: { region: string }) {
   const key = normRegion(region);
   const dep = COLOMBIA_DEPTS.deps.find((d) => normRegion(d.name) === key);
@@ -347,47 +274,27 @@ function RegionDistrictMap({ region }: { region: string }) {
     return <div style={{ padding: 24, color: 'var(--text-muted)' }}>Aún no hay datos de distritos para {region}.</div>;
   }
   const bb = pathBBox(dep.d);
-  const S = Math.max(bb.w, bb.h);      // scale reference so strokes/fonts fit any department size
-  const pad = S * 0.06;
+  const S = Math.max(bb.w, bb.h);      // scale reference so radii/fonts fit any department size
+  const pad = S * 0.12;
   const vb = `${bb.minX - pad} ${bb.minY - pad} ${bb.w + pad * 2} ${bb.h + pad * 2}`;
   const maxC = Math.max(...districts.map((d) => d.c));
   const ranked = [...districts].sort((a, b) => b.c - a.c);
   const px = (d: District) => bb.minX + d.fx * bb.w;
   const py = (d: District) => bb.minY + d.fy * bb.h;
-  // Partition the real department shape into one polygon per district.
-  const clipPoly = largestRing(parseRings(dep.d));
-  const seeds = districts.map((d) => ({ x: px(d), y: py(d) }));
-  // A seed that falls outside the silhouette can be fully dominated by a
-  // neighbour (empty cell). Pull any such seed toward the department centroid
-  // until it owns area, so every district gets a visible polygon.
-  const centroid = polygonCentroid(clipPoly);
-  for (let i = 0; i < seeds.length; i++) {
-    for (let tries = 0; tries < 8 && voronoiCell(clipPoly, seeds, i).length < 3; tries++) {
-      seeds[i] = { x: seeds[i].x + (centroid.x - seeds[i].x) * 0.35, y: seeds[i].y + (centroid.y - seeds[i].y) * 0.35 };
-    }
-  }
-  const cells = districts.map((_, i) => voronoiCell(clipPoly, seeds, i));
   return (
     <div className="map-row" style={{ alignItems: 'stretch' }}>
       <div className="map-svg-wrap" style={{ display: 'flex', flexDirection: 'column' }}>
         <svg viewBox={vb} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', maxHeight: 380, display: 'block' }}>
-          {/* base fill (covers islands / secondary rings too) */}
-          <path d={dep.d} fill="var(--neutral-100)" stroke="none" />
-          {/* one filled polygon per district, bordered in white */}
-          {districts.map((d, i) => {
-            const cell = cells[i];
-            if (cell.length < 3) return null;
-            return <path key={d.n} d={ringToPath(cell)} fill={colorScale[bucket(d.c)]} fillOpacity={0.95} stroke="#fff" strokeWidth={S * 0.005} strokeLinejoin="round" />;
-          })}
-          {/* department outline on top */}
-          <path d={dep.d} fill="none" stroke="var(--border-default)" strokeWidth={S * 0.01} strokeLinejoin="round" />
-          {/* case count centred in each district polygon */}
-          {districts.map((d, i) => {
-            const cell = cells[i];
-            if (cell.length < 3) return null;
-            const ctr = polygonCentroid(cell);
+          <path d={dep.d} fill="var(--neutral-100)" stroke="var(--border-default)" strokeWidth={S * 0.006} strokeLinejoin="round" />
+          {districts.map((d) => {
+            const r = S * (0.035 + 0.032 * (d.c / maxC));
             const dark = bucket(d.c) >= 3;
-            return <text key={d.n} x={ctr.x} y={ctr.y + S * 0.011} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: S * 0.028, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{d.c}</text>;
+            return (
+              <g key={d.n}>
+                <circle cx={px(d)} cy={py(d)} r={r} fill={colorScale[bucket(d.c)]} fillOpacity={0.92} stroke="#fff" strokeWidth={S * 0.006} />
+                <text x={px(d)} y={py(d) + S * 0.012} textAnchor="middle" style={{ fontFamily: 'var(--font-mono)', fontSize: S * 0.03, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' }}>{d.c}</text>
+              </g>
+            );
           })}
         </svg>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, justifyContent: 'center' }}>
