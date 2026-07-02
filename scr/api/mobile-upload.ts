@@ -17,9 +17,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
-    res.status(503).json({ error: 'Almacenamiento no configurado: falta BLOB_READ_WRITE_TOKEN (conecta un Blob store en Vercel).' });
+  // Auth resolves automatically from the env: BLOB_READ_WRITE_TOKEN if present,
+  // otherwise OIDC (VERCEL_OIDC_TOKEN + BLOB_STORE_ID, injected by Vercel).
+  if (!process.env.BLOB_STORE_ID && !process.env.BLOB_READ_WRITE_TOKEN) {
+    res.status(503).json({ error: 'Almacenamiento no configurado: conecta un Blob store al proyecto en Vercel.' });
     return;
   }
 
@@ -41,8 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const buffer = Buffer.from(dataBase64, 'base64');
     const safeName = (body?.name || 'foto.jpg').replace(/[^a-zA-Z0-9._-]/g, '_').slice(-40);
     const blob = await put(`mobile/${session}/${Date.now()}-${safeName}`, buffer, {
-      access: 'private', // patient photos: readable only with the store token, never via public URL
-      token,
+      access: 'private', // patient photos: readable only with store auth, never via public URL
       contentType,
       addRandomSuffix: true,
     });

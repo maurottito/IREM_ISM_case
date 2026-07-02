@@ -14,9 +14,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
-    res.status(503).json({ error: 'Almacenamiento no configurado: falta BLOB_READ_WRITE_TOKEN (conecta un Blob store en Vercel).' });
+  if (!process.env.BLOB_STORE_ID && !process.env.BLOB_READ_WRITE_TOKEN) {
+    res.status(503).json({ error: 'Almacenamiento no configurado: conecta un Blob store al proyecto en Vercel.' });
     return;
   }
 
@@ -28,12 +27,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { blobs } = await list({ prefix: `mobile/${session}/`, token });
+    const { blobs } = await list({ prefix: `mobile/${session}/` });
     const ordered = blobs.sort((a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime());
 
     const photos: { dataBase64: string; contentType: string }[] = [];
     for (const b of ordered) {
-      const result = await get(b.pathname, { access: 'private', token });
+      const result = await get(b.pathname, { access: 'private' });
       if (!result || !result.stream) continue;
       const arrayBuffer = await new Response(result.stream).arrayBuffer();
       photos.push({

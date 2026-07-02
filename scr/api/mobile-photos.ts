@@ -9,9 +9,8 @@ import { list, del } from '@vercel/blob';
 const isValidSession = (s: string) => /^[a-zA-Z0-9_-]{6,64}$/.test(s);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
-    res.status(503).json({ error: 'Almacenamiento no configurado: falta BLOB_READ_WRITE_TOKEN (conecta un Blob store en Vercel).' });
+  if (!process.env.BLOB_STORE_ID && !process.env.BLOB_READ_WRITE_TOKEN) {
+    res.status(503).json({ error: 'Almacenamiento no configurado: conecta un Blob store al proyecto en Vercel.' });
     return;
   }
 
@@ -28,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
       // Only metadata — the blobs are private, so we never hand out URLs. The
       // desktop calls /api/mobile-fetch to pull the bytes through the token.
-      const { blobs } = await list({ prefix, token });
+      const { blobs } = await list({ prefix });
       const photos = blobs
         .sort((a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime())
         .map((b) => ({ pathname: b.pathname, uploadedAt: b.uploadedAt, size: b.size }));
@@ -37,8 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
-      const { blobs } = await list({ prefix, token });
-      if (blobs.length > 0) await del(blobs.map((b) => b.url), { token });
+      const { blobs } = await list({ prefix });
+      if (blobs.length > 0) await del(blobs.map((b) => b.url));
       res.status(200).json({ ok: true, deleted: blobs.length });
       return;
     }
