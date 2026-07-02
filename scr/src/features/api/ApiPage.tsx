@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const CodeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -19,6 +19,11 @@ const CopyIcon = () => (
 const DownloadIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+  </svg>
+);
+const MailIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/>
   </svg>
 );
 
@@ -50,7 +55,12 @@ r = requests.get(API, headers=HEADERS, params=params)
 data = r.json()          # datos anonimizados
 print(len(data["results"]), "casos")`;
 
-const anonRows = [
+interface AnonRow {
+  id: string; semana: string; distrito: string; localidad: string;
+  motivo: string; sexo: string; grupo: string; pdr: string; busqueda: string;
+}
+
+const anonRows: AnonRow[] = [
   { id: 'anon-a231', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Llorente', motivo: 'Sospechoso', sexo: 'M', grupo: '25-34', pdr: 'P. falciparum', busqueda: 'Pasiva' },
   { id: 'anon-a232', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Llorente', motivo: 'Conviviente', sexo: 'H', grupo: '35-44', pdr: 'Negativa', busqueda: 'Reactiva' },
   { id: 'anon-a233', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Espriella', motivo: 'Sospechoso', sexo: 'M', grupo: '5-14', pdr: 'P. vivax', busqueda: 'Pasiva' },
@@ -59,15 +69,110 @@ const anonRows = [
   { id: 'anon-a236', semana: '2026-W26', distrito: 'Tumaco', localidad: 'San Luis', motivo: 'Sospechoso', sexo: 'H', grupo: '45-59', pdr: 'P. vivax', busqueda: 'Reactiva' },
 ];
 
-interface ApiPageProps {
-  onToast: (msg: string) => void;
+type PdrKey = 'pv' | 'pf' | 'neg';
+const pdrChips: { key: PdrKey; label: string; color: string; pdr: string }[] = [
+  { key: 'pv', label: 'P. vivax', color: 'var(--species-vivax)', pdr: 'P. vivax' },
+  { key: 'pf', label: 'P. falciparum', color: 'var(--species-falciparum)', pdr: 'P. falciparum' },
+  { key: 'neg', label: 'Negativa', color: 'var(--status-negative-500)', pdr: 'Negativa' },
+];
+const pdrToKey: Record<string, PdrKey> = { 'P. vivax': 'pv', 'P. falciparum': 'pf', 'Negativa': 'neg' };
+
+interface ManualFilters {
+  distrito: string; localidad: string; motivo: string; busqueda: string; pdr: Record<PdrKey, boolean>;
 }
 
-export function ApiPage({ onToast }: ApiPageProps) {
+interface ApiPageProps {
+  onToast: (msg: string) => void;
+  userEmail: string;
+}
+
+export function ApiPage({ onToast, userEmail }: ApiPageProps) {
   const [tab, setTab] = useState<'api' | 'manual'>('api');
 
+  const [distrito, setDistrito] = useState('Todos');
+  const [localidad, setLocalidad] = useState('Todas');
+  const [motivo, setMotivo] = useState('Todos');
+  const [busqueda, setBusqueda] = useState('Todas');
+  const [pdr, setPdr] = useState<Record<PdrKey, boolean>>({ pv: true, pf: true, neg: true });
+  const [applied, setApplied] = useState<ManualFilters | null>(null);
+  const [sending, setSending] = useState(false);
+
+  const toggle = (k: PdrKey) => setPdr((f) => ({ ...f, [k]: !f[k] }));
+
+  const matchRow = (r: AnonRow, f: ManualFilters): boolean => {
+    const key = pdrToKey[r.pdr];
+    if (key && !f.pdr[key]) return false;
+    if (f.distrito !== 'Todos' && r.distrito !== f.distrito) return false;
+    if (f.localidad !== 'Todas' && r.localidad !== f.localidad) return false;
+    if (f.motivo !== 'Todos' && r.motivo !== f.motivo) return false;
+    if (f.busqueda !== 'Todas' && r.busqueda !== f.busqueda) return false;
+    return true;
+  };
+
+  const displayRows = useMemo(
+    () => (applied ? anonRows.filter((r) => matchRow(r, applied)) : anonRows),
+    [applied],
+  );
+
+  const runSearch = () => {
+    const f = { distrito, localidad, motivo, busqueda, pdr };
+    setApplied(f);
+    const count = anonRows.filter((r) => matchRow(r, f)).length;
+    onToast(`Se encontraron ${count} ${count === 1 ? 'registro' : 'registros'} anonimizados que coinciden`);
+  };
+
+  const clearFilters = () => {
+    setDistrito('Todos'); setLocalidad('Todas'); setMotivo('Todos'); setBusqueda('Todas');
+    setPdr({ pv: true, pf: true, neg: true });
+    setApplied(null);
+  };
+
+  const buildCsv = (): string => {
+    const headers = ['Caso (anón.)', 'Semana epi.', 'Distrito', 'Localidad', 'Motivo', 'Sexo', 'Grupo edad', 'PDR', 'Tipo de búsqueda'];
+    const esc = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [headers.map(esc).join(',')];
+    for (const r of displayRows) {
+      lines.push([r.id, r.semana, r.distrito, r.localidad, r.motivo, r.sexo, r.grupo, r.pdr, r.busqueda].map((v) => esc(String(v))).join(','));
+    }
+    return '﻿' + lines.join('\r\n');
+  };
+
+  const fileName = `casos_anonimizados_${new Date().toISOString().slice(0, 10)}.csv`;
+
+  const downloadExcel = () => {
+    const blob = new Blob([buildCsv()], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    onToast(`Descargando ${fileName} (${displayRows.length} ${displayRows.length === 1 ? 'registro' : 'registros'})`);
+  };
+
+  const sendEmail = async () => {
+    setSending(true);
+    try {
+      const csv = buildCsv();
+      const resp = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: userEmail, filename: fileName, csvBase64: btoa(unescape(encodeURIComponent(csv))), count: displayRows.length }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        onToast(err.error || `No se pudo enviar el correo (${resp.status})`);
+      } else {
+        onToast(`Correo enviado a ${userEmail} con ${displayRows.length} ${displayRows.length === 1 ? 'registro' : 'registros'} adjuntos`);
+      }
+    } catch {
+      onToast('Error de red al enviar el correo');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
-    <div className="page-content">
+    <div className="page-content full">
       <div>
         <div className="page-title">Descarga de datos de vigilancia</div>
         <div className="page-subtitle">Accede al consolidado regional anonimizado vía API o descarga manual filtrada</div>
@@ -166,42 +271,89 @@ export function ApiPage({ onToast }: ApiPageProps) {
       {tab === 'manual' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'slideUp .24s ease both' }}>
           <div className="panel filters-panel">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              <strong>Todos los campos son opcionales</strong>
+              <span>Deja los filtros vacíos para ver todo el conjunto anonimizado, o combina los que necesites y pulsa «Buscar registros».</span>
+            </div>
             <div className="filters-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
               <label className="filter-label">
-                Región
-                <select className="filter-select">
-                  <option>Nariño</option><option>Chocó</option><option>Cauca</option><option>Amazonas</option>
-                </select>
-              </label>
-              <label className="filter-label">
                 Distrito
-                <select className="filter-select">
-                  <option>Tumaco</option><option>Barbacoas</option><option>Roberto Payán</option><option>Todos</option>
+                <select className="filter-select" value={distrito} onChange={(e) => setDistrito(e.target.value)}>
+                  <option>Todos</option><option>Tumaco</option><option>Barbacoas</option><option>Roberto Payán</option>
                 </select>
               </label>
               <label className="filter-label">
                 Localidad
-                <select className="filter-select">
-                  <option>Todas</option><option>Llorente</option><option>Espriella</option><option>Chajal</option>
+                <select className="filter-select" value={localidad} onChange={(e) => setLocalidad(e.target.value)}>
+                  <option>Todas</option><option>Llorente</option><option>Espriella</option><option>Tumaco</option><option>Chajal</option><option>San Luis</option>
                 </select>
               </label>
               <label className="filter-label">
-                Periodo
-                <select className="filter-select">
-                  <option>Junio 2026</option><option>Q2 2026</option><option>Año 2026</option>
+                Motivo
+                <select className="filter-select" value={motivo} onChange={(e) => setMotivo(e.target.value)}>
+                  <option>Todos</option><option>Sospechoso</option><option>Conviviente</option><option>Seguimiento</option>
+                </select>
+              </label>
+              <label className="filter-label">
+                Tipo de búsqueda
+                <select className="filter-select" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}>
+                  <option>Todas</option><option>Pasiva</option><option>Proactiva</option><option>Reactiva</option>
                 </select>
               </label>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, paddingTop: 18, borderTop: '1px solid var(--border-subtle)' }}>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Vista previa: <strong style={{ color: 'var(--text-strong)' }}>1.284</strong> registros anonimizados coinciden</p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button type="button" className="btn btn-outline" onClick={() => onToast('Descargando casos_narino_jun2026.csv (1.284 registros)')}>
-                  <DownloadIcon /> CSV
-                </button>
-                <button type="button" className="btn btn-primary" onClick={() => onToast('Descargando casos_narino_jun2026.xlsx (1.284 registros)')}>
-                  <DownloadIcon /> Descargar Excel
-                </button>
+
+            <div style={{ marginTop: 18 }}>
+              <div className="filter-section-label">Resultado del diagnóstico</div>
+              <div className="chip-row">
+                {pdrChips.map((chip) => {
+                  const on = pdr[chip.key];
+                  return (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      className="pdr-chip"
+                      onClick={() => toggle(chip.key)}
+                      style={{
+                        borderColor: on ? chip.color : 'var(--border-default)',
+                        background: on ? `color-mix(in srgb, ${chip.color} 12%, #fff)` : '#fff',
+                        color: on ? 'var(--text-strong)' : 'var(--text-muted)',
+                      }}
+                    >
+                      <span style={{ width: 9, height: 9, borderRadius: '50%', background: on ? chip.color : 'var(--border-default)', flexShrink: 0, display: 'inline-block' }} />
+                      {chip.label}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
+
+            <div className="filters-footer">
+              <button type="button" className="btn btn-ghost" onClick={clearFilters}>Limpiar</button>
+              <button type="button" className="btn btn-primary" onClick={runSearch}>
+                <FilterIcon /> Buscar registros
+              </button>
+            </div>
+          </div>
+
+          <div className="section-row">
+            <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>
+              Mostrando <strong style={{ color: 'var(--text-strong)' }}>{displayRows.length}</strong> registros anonimizados
+              {applied && <span style={{ color: 'var(--text-faint)' }}> · filtros aplicados</span>}
+            </p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="email-chip" title="El correo se enviará a tu cuenta">
+                <MailIcon />
+                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Se enviará a</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>{userEmail}</span>
+                </div>
+              </div>
+              <button type="button" className="btn btn-outline" onClick={sendEmail} disabled={sending}>
+                <MailIcon /> {sending ? 'Enviando…' : 'Enviar por correo'}
+              </button>
+              <button type="button" className="btn btn-primary" onClick={downloadExcel}>
+                <DownloadIcon /> Descargar Excel
+              </button>
             </div>
           </div>
 
@@ -218,7 +370,13 @@ export function ApiPage({ onToast }: ApiPageProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {anonRows.map((r) => (
+                  {displayRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} style={{ textAlign: 'center', padding: '32px 14px', color: 'var(--text-faint)' }}>
+                        No hay registros que coincidan con los filtros seleccionados.
+                      </td>
+                    </tr>
+                  ) : displayRows.map((r) => (
                     <tr key={r.id}>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-strong)' }}>{r.id}</td>
                       <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-muted)' }}>{r.semana}</td>

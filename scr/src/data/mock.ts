@@ -28,10 +28,10 @@ export const searchRows: CaseRecord[] = [
 ];
 
 export const identities: Record<UserRole, Identity> = {
-  supervisor: { user: 'James Torres', role: 'Supervisor · Tumaco, Nariño', initials: 'JT', avatarBg: '#217ab3' },
-  specialist: { user: 'Marco Fernández', role: 'Especialista de datos · MinSalud', initials: 'MF', avatarBg: '#7aa63c' },
-  manager: { user: 'Manuela Hernández', role: 'Gerente de salud · Nariño', initials: 'MH', avatarBg: '#7a5bd6' },
-  guest: { user: 'Invitado', role: 'Consulta pública', initials: 'IN', avatarBg: '#6c7883' },
+  supervisor: { user: 'James Torres', role: 'Supervisor · Tumaco, Nariño', initials: 'JT', avatarBg: '#217ab3', email: 'maurottito@gmail.com' },
+  specialist: { user: 'Marco Fernández', role: 'Especialista de datos · MinSalud', initials: 'MF', avatarBg: '#7aa63c', email: 'maurottito@gmail.com' },
+  manager: { user: 'Manuela Hernández', role: 'Gerente de salud · Nariño', initials: 'MH', avatarBg: '#7a5bd6', email: 'maurottito@gmail.com' },
+  guest: { user: 'Invitado', role: 'Consulta pública', initials: 'IN', avatarBg: '#6c7883', email: 'maurottito@gmail.com' },
 };
 
 export const regionData: Record<string, { cases: number; pos: string; localities: string; trend: string }> = {

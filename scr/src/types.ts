@@ -36,4 +36,5 @@ export interface Identity {
   role: string;
   initials: string;
   avatarBg: string;
+  email: string;
 }

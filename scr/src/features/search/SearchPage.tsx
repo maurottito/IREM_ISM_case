@@ -54,9 +54,10 @@ interface AppliedFilters {
 interface SearchPageProps {
   onToast: (msg: string) => void;
   validatedRows?: CaseRecord[];
+  userEmail: string;
 }
 
-export function SearchPage({ onToast, validatedRows = [] }: SearchPageProps) {
+export function SearchPage({ onToast, validatedRows = [], userEmail }: SearchPageProps) {
   const allRows = useMemo(() => [...validatedRows, ...searchRows], [validatedRows]);
 
   const [dateStart, setDateStart] = useState('');
@@ -68,7 +69,7 @@ export function SearchPage({ onToast, validatedRows = [] }: SearchPageProps) {
 
   // null = no search applied yet → show everything
   const [applied, setApplied] = useState<AppliedFilters | null>(null);
-  const [email, setEmail] = useState('maurottito@gmail.com');
+  const email = userEmail;
   const [sending, setSending] = useState(false);
 
   const toggle = (k: PdrKey) => setPdr((f) => ({ ...f, [k]: !f[k] }));
@@ -242,16 +243,12 @@ export function SearchPage({ onToast, validatedRows = [] }: SearchPageProps) {
           {applied && <span style={{ color: 'var(--text-faint)' }}> · filtros aplicados</span>}
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <span style={{ position: 'absolute', left: 10, color: 'var(--text-faint)', display: 'flex' }}><MailIcon /></span>
-            <input
-              className="search-input"
-              style={{ paddingLeft: 32, minWidth: 210 }}
-              type="email"
-              placeholder="correo@ejemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <div className="email-chip" title="El correo se enviará a tu cuenta">
+            <MailIcon />
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+              <span style={{ fontSize: 10, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Se enviará a</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>{email}</span>
+            </div>
           </div>
           <button type="button" className="btn btn-outline" onClick={sendEmail} disabled={sending}>
             <MailIcon /> {sending ? 'Enviando…' : 'Enviar por correo'}

@@ -1,21 +1,14 @@
 import type { ReactNode } from 'react';
 import type { Identity } from '../../types';
 
-const SearchIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>
-  </svg>
-);
-
 interface TopbarProps {
   title: string;
   description: string;
-  showSearch?: boolean;
   identity: Identity;
   headerActions?: ReactNode;
 }
 
-export function Topbar({ title, description, showSearch = true, identity, headerActions }: TopbarProps) {
+export function Topbar({ title, description, identity, headerActions }: TopbarProps) {
   return (
     <header className="topbar">
       <div className="topbar-titles">
@@ -24,12 +17,6 @@ export function Topbar({ title, description, showSearch = true, identity, header
       </div>
       <div className="topbar-right">
         {headerActions}
-        {showSearch && (
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <span style={{ position: 'absolute', left: 10, color: 'var(--text-faint)', display: 'flex' }}><SearchIcon /></span>
-            <input className="search-input" style={{ paddingLeft: 32 }} placeholder="Buscar ID de caso…" />
-          </div>
-        )}
         <div className="topbar-identity">
           <div>
             <div className="topbar-user-name">{identity.user}</div>

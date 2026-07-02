@@ -9,7 +9,6 @@ interface AppShellProps {
   activeDescription: string;
   role: UserRole;
   identity: Identity;
-  showSearch?: boolean;
   headerActions?: ReactNode;
   onRouteChange: (route: AppRoute) => void;
   onLogout: () => void;
@@ -23,7 +22,6 @@ export function AppShell({
   activeDescription,
   role,
   identity,
-  showSearch,
   headerActions,
   onRouteChange,
   onLogout,
@@ -44,7 +42,6 @@ export function AppShell({
         <Topbar
           title={activeTitle}
           description={activeDescription}
-          showSearch={showSearch}
           identity={identity}
           headerActions={headerActions}
         />

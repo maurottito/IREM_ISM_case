@@ -81,13 +81,21 @@ export default function App() {
     const pv = rows.filter((r) => r.result === 'P. vivax').length;
     const pf = rows.filter((r) => r.result === 'P. falciparum').length;
     const positives = pv + pf;
-    if (positives > 0) {
+    if (positives === 1) {
       window.alert(
         `⚠ ALERTA EPIDEMIOLÓGICA\n\n` +
-        `Se detectaron ${positives} ${positives === 1 ? 'caso positivo' : 'casos positivos'} de malaria en este lote:\n` +
+        `Se detectó 1 caso positivo de malaria en este lote:\n` +
         `  • ${pv} P. vivax\n` +
         `  • ${pf} P. falciparum\n\n` +
-        `Verifica que el tratamiento y la notificación al sistema de vigilancia se hayan realizado.`
+        `Verifica que el tratamiento y la notificación al sistema de vigilancia se hayan realizado para el caso.`
+      );
+    } else if (positives > 1) {
+      window.alert(
+        `⚠ ALERTA EPIDEMIOLÓGICA\n\n` +
+        `Se detectaron ${positives} casos positivos de malaria en este lote:\n` +
+        `  • ${pv} P. vivax\n` +
+        `  • ${pf} P. falciparum\n\n` +
+        `Verifica que el tratamiento y la notificación al sistema de vigilancia se hayan realizado para todos los casos.`
       );
     }
     showToast(`${rows.length} ${rows.length === 1 ? 'registro validado' : 'registros validados'} y sincronizados con el consolidado regional`);
@@ -163,15 +171,14 @@ export default function App() {
         activeDescription={description}
         role={role}
         identity={identity}
-        showSearch={activeRoute !== 'dashboard'}
         headerActions={activeRoute === 'dashboard' ? dashboardHeaderActions : undefined}
         onRouteChange={(r) => setRoute(allowedRoutes.includes(r) ? r : allowedRoutes[0])}
         onLogout={handleLogout}
         onLogin={() => setView('login')}
       >
         {activeRoute === 'upload' && <UploadPage onValidate={handleValidate} />}
-        {activeRoute === 'search' && <SearchPage onToast={showToast} validatedRows={validatedRows} />}
-        {activeRoute === 'api' && <ApiPage onToast={showToast} />}
+        {activeRoute === 'search' && <SearchPage onToast={showToast} validatedRows={validatedRows} userEmail={identity.email} />}
+        {activeRoute === 'api' && <ApiPage onToast={showToast} userEmail={identity.email} />}
         {activeRoute === 'dashboard' && <DashboardPage region={region} period={period} />}
       </AppShell>
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}

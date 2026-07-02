@@ -241,12 +241,12 @@ export function UploadPage({ onValidate }: UploadPageProps) {
               {rows.map((row, i) => (
                 <tr key={`${row.id}-${i}`} className={row.needsReview ? 'flag-row' : ''}>
                   <td><input className="rev-input" value={row.date} onChange={(e) => updateRow(i, 'date', e.target.value)} style={{ width: 88, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td>
-                    <input className="rev-input" value={row.colvol} onChange={(e) => updateRow(i, 'colvol', e.target.value)} style={{ marginBottom: 2 }} />
-                    <input className="rev-input" value={row.colvolCode} onChange={(e) => updateRow(i, 'colvolCode', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5 }} />
+                  <td style={{ minWidth: 180 }}>
+                    <input className="rev-input" value={row.colvol} onChange={(e) => updateRow(i, 'colvol', e.target.value)} style={{ marginBottom: 2, minWidth: 160 }} />
+                    <input className="rev-input" value={row.colvolCode} onChange={(e) => updateRow(i, 'colvolCode', e.target.value)} style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, minWidth: 160 }} />
                   </td>
                   <td><input className="rev-input" value={row.id} onChange={(e) => updateRow(i, 'id', e.target.value)} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
-                  <td><input className="rev-input" value={row.locality} onChange={(e) => updateRow(i, 'locality', e.target.value)} /></td>
+                  <td style={{ minWidth: 180 }}><input className="rev-input" value={row.locality} onChange={(e) => updateRow(i, 'locality', e.target.value)} style={{ minWidth: 160 }} /></td>
                   <td>
                     <select className="rev-select" value={row.motivo} onChange={(e) => updateRow(i, 'motivo', e.target.value)}>
                       <option>Sospechoso</option>
