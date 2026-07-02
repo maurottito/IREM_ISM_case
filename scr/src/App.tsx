@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { AppShell } from './app/layout/AppShell';
 import { ApiPage } from './features/api/ApiPage';
-import { DashboardPage } from './features/dashboard/DashboardPage';
+import { DashboardPage, regionOptions } from './features/dashboard/DashboardPage';
+import type { DashPeriod } from './features/dashboard/DashboardPage';
 import { SearchPage } from './features/search/SearchPage';
 import { UploadPage } from './features/upload/UploadPage';
 import { identities } from './data/mock';
@@ -45,6 +46,8 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [validatedRows, setValidatedRows] = useState<CaseRecord[]>([]);
+  const [region, setRegion] = useState('Nariño');
+  const [period, setPeriod] = useState<DashPeriod>('weeks');
   const userRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
 
@@ -75,9 +78,39 @@ export default function App() {
 
   const handleValidate = (rows: CaseRecord[]) => {
     setValidatedRows((prev) => [...rows, ...prev]);
+    const pv = rows.filter((r) => r.result === 'P. vivax').length;
+    const pf = rows.filter((r) => r.result === 'P. falciparum').length;
+    const positives = pv + pf;
+    if (positives > 0) {
+      window.alert(
+        `⚠ ALERTA EPIDEMIOLÓGICA\n\n` +
+        `Se detectaron ${positives} ${positives === 1 ? 'caso positivo' : 'casos positivos'} de malaria en este lote:\n` +
+        `  • ${pv} P. vivax\n` +
+        `  • ${pf} P. falciparum\n\n` +
+        `Verifica que el tratamiento y la notificación al sistema de vigilancia se hayan realizado.`
+      );
+    }
     showToast(`${rows.length} ${rows.length === 1 ? 'registro validado' : 'registros validados'} y sincronizados con el consolidado regional`);
     setTimeout(() => { setRoute('search'); }, 2000);
   };
+
+  const dashboardHeaderActions = (
+    <div className="topbar-filters">
+      <label className="topbar-filter">
+        <span>Región</span>
+        <select className="filter-select" value={region} onChange={(e) => setRegion(e.target.value)}>
+          {regionOptions.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
+      </label>
+      <label className="topbar-filter">
+        <span>Periodo</span>
+        <select className="filter-select" value={period} onChange={(e) => setPeriod(e.target.value as DashPeriod)}>
+          <option value="weeks">Últimas 12 semanas</option>
+          <option value="year">Todo el año 2026</option>
+        </select>
+      </label>
+    </div>
+  );
 
   if (view === 'login') {
     return (
@@ -131,6 +164,7 @@ export default function App() {
         role={role}
         identity={identity}
         showSearch={activeRoute !== 'dashboard'}
+        headerActions={activeRoute === 'dashboard' ? dashboardHeaderActions : undefined}
         onRouteChange={(r) => setRoute(allowedRoutes.includes(r) ? r : allowedRoutes[0])}
         onLogout={handleLogout}
         onLogin={() => setView('login')}
@@ -138,7 +172,7 @@ export default function App() {
         {activeRoute === 'upload' && <UploadPage onValidate={handleValidate} />}
         {activeRoute === 'search' && <SearchPage onToast={showToast} validatedRows={validatedRows} />}
         {activeRoute === 'api' && <ApiPage onToast={showToast} />}
-        {activeRoute === 'dashboard' && <DashboardPage />}
+        {activeRoute === 'dashboard' && <DashboardPage region={region} period={period} />}
       </AppShell>
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </>

@@ -48,15 +48,15 @@ export const regionData: Record<string, { cases: number; pos: string; localities
 };
 
 export const incidenceData = [
-  { l: 'W15', v: 2.1 }, { l: 'W16', v: 2.4 }, { l: 'W17', v: 2.2 }, { l: 'W18', v: 2.8 },
-  { l: 'W19', v: 3.1 }, { l: 'W20', v: 2.9 }, { l: 'W21', v: 3.4 }, { l: 'W22', v: 3.2 },
-  { l: 'W23', v: 3.0 }, { l: 'W24', v: 3.5 }, { l: 'W25', v: 3.8 }, { l: 'W26', v: 3.6, hi: true },
+  { l: 'Sem 15', v: 2.1 }, { l: 'Sem 16', v: 2.4 }, { l: 'Sem 17', v: 2.2 }, { l: 'Sem 18', v: 2.8 },
+  { l: 'Sem 19', v: 3.1 }, { l: 'Sem 20', v: 2.9 }, { l: 'Sem 21', v: 3.4 }, { l: 'Sem 22', v: 3.2 },
+  { l: 'Sem 23', v: 3.0 }, { l: 'Sem 24', v: 3.5 }, { l: 'Sem 25', v: 3.8 }, { l: 'Sem 26', v: 3.6, hi: true },
 ];
 
 export const positivityData = [
-  { l: 'W15', v: 9.8 }, { l: 'W16', v: 10.5 }, { l: 'W17', v: 11.2 }, { l: 'W18', v: 10.8 },
-  { l: 'W19', v: 12.1 }, { l: 'W20', v: 13.4 }, { l: 'W21', v: 12.8 }, { l: 'W22', v: 13.9 },
-  { l: 'W23', v: 13.1 }, { l: 'W24', v: 12.6 }, { l: 'W25', v: 13.5 }, { l: 'W26', v: 12.4, hi: true },
+  { l: 'Sem 15', v: 9.8 }, { l: 'Sem 16', v: 10.5 }, { l: 'Sem 17', v: 11.2 }, { l: 'Sem 18', v: 10.8 },
+  { l: 'Sem 19', v: 12.1 }, { l: 'Sem 20', v: 13.4 }, { l: 'Sem 21', v: 12.8 }, { l: 'Sem 22', v: 13.9 },
+  { l: 'Sem 23', v: 13.1 }, { l: 'Sem 24', v: 12.6 }, { l: 'Sem 25', v: 13.5 }, { l: 'Sem 26', v: 12.4, hi: true },
 ];
 
 // ── Datos por mes (todo el año 2026) ─────────────────────────────

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { COLOMBIA_DEPTS } from '../../data/colombia-departments';
 import { regionData, incidenceData, positivityData, incidenceYear, positivityYear } from '../../data/mock';
 
@@ -228,13 +227,12 @@ const statCards = [
   { label: 'Localidades activas', value: '110', delta: 'de 180', trend: 'flat' },
 ];
 
-const regionOptions = ['Nariño', 'Chocó', 'Cauca', 'Valle del Cauca', 'Antioquia', 'Córdoba', 'Amazonas', 'Putumayo', 'Guaviare', 'Vichada'];
+export const regionOptions = ['Nariño', 'Chocó', 'Cauca', 'Valle del Cauca', 'Antioquia', 'Córdoba', 'Amazonas', 'Putumayo', 'Guaviare', 'Vichada'];
+export type DashPeriod = 'weeks' | 'year';
 
 function normRegion(s: string) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().trim(); }
 
-export function DashboardPage() {
-  const [region, setRegion] = useState('Nariño');
-  const [period, setPeriod] = useState<'weeks' | 'year'>('weeks');
+export function DashboardPage({ region, period }: { region: string; period: DashPeriod }) {
   const info = regionData[normRegion(region)] ?? { cases: 0, pos: '—', localities: '—', trend: '—' };
 
   const isYear = period === 'year';
@@ -256,33 +254,6 @@ export function DashboardPage() {
 
   return (
     <div className="page-content wide">
-      <div className="dash-top">
-        <div>
-          <div className="page-title">Panel epidemiológico</div>
-          <div className="page-subtitle">Vigilancia de casos de malaria por territorio y tendencia · Semana epidemiológica 2026-W26</div>
-        </div>
-        <div className="dash-filters">
-          <div className="dash-filter-group">
-            <div className="dash-filter-label">Región</div>
-            <select className="filter-select" value={region} onChange={(e) => setRegion(e.target.value)} style={{ height: 38, minWidth: 150 }}>
-              {regionOptions.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-          <div className="dash-filter-group">
-            <div className="dash-filter-label">Periodo</div>
-            <select
-              className="filter-select"
-              value={period}
-              onChange={(e) => setPeriod(e.target.value as 'weeks' | 'year')}
-              style={{ height: 38 }}
-            >
-              <option value="weeks">Últimas 12 semanas</option>
-              <option value="year">Todo el año 2026</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
       {/* Stat cards · totales nacionales */}
       <div className="dash-filter-label" style={{ marginBottom: -6 }}>Total nacional · Colombia</div>
       <div className="stat-cards">

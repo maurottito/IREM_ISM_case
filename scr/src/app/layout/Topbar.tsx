@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Identity } from '../../types';
 
 const SearchIcon = () => (
@@ -11,9 +12,10 @@ interface TopbarProps {
   description: string;
   showSearch?: boolean;
   identity: Identity;
+  headerActions?: ReactNode;
 }
 
-export function Topbar({ title, description, showSearch = true, identity }: TopbarProps) {
+export function Topbar({ title, description, showSearch = true, identity, headerActions }: TopbarProps) {
   return (
     <header className="topbar">
       <div className="topbar-titles">
@@ -21,6 +23,7 @@ export function Topbar({ title, description, showSearch = true, identity }: Topb
         <p>{description}</p>
       </div>
       <div className="topbar-right">
+        {headerActions}
         {showSearch && (
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <span style={{ position: 'absolute', left: 10, color: 'var(--text-faint)', display: 'flex' }}><SearchIcon /></span>

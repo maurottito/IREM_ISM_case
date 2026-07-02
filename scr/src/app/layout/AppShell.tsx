@@ -10,6 +10,7 @@ interface AppShellProps {
   role: UserRole;
   identity: Identity;
   showSearch?: boolean;
+  headerActions?: ReactNode;
   onRouteChange: (route: AppRoute) => void;
   onLogout: () => void;
   onLogin: () => void;
@@ -23,6 +24,7 @@ export function AppShell({
   role,
   identity,
   showSearch,
+  headerActions,
   onRouteChange,
   onLogout,
   onLogin,
@@ -44,6 +46,7 @@ export function AppShell({
           description={activeDescription}
           showSearch={showSearch}
           identity={identity}
+          headerActions={headerActions}
         />
         {children}
       </div>

@@ -135,6 +135,30 @@ export function ApiPage({ onToast }: ApiPageProps) {
               <strong>Datos anonimizados</strong>
               <span>Todos los registros de la API se entregan sin identificadores personales, conforme al protocolo de datos de la RMEI.</span>
             </div>
+
+            <div className="panel">
+              <div className="api-section-label">¿Necesitas datos no anonimizados?</div>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>
+                El acceso a datos con identificadores personales requiere una solicitud formal y aprobación previa. Sigue estos pasos:
+              </p>
+              {[
+                { t: 'Redacta la solicitud', d: 'Envía una solicitud al Departamento de Epidemiología del Ministerio de Salud.' },
+                { t: 'Justifica el acceso', d: 'Indica claramente el porqué requieres acceso a los datos no anonimizados y el uso previsto.' },
+                { t: 'Espera la respuesta', d: 'Tu solicitud será atendida en un plazo máximo de 30 días.' },
+              ].map((s, i) => (
+                <div key={i} className="api-step">
+                  <div className="api-step-num">{i + 1}</div>
+                  <div>
+                    <div className="api-step-title">{s.t}</div>
+                    <div className="api-step-desc">{s.d}</div>
+                  </div>
+                </div>
+              ))}
+              <div className="alert alert-warning">
+                <strong>Solicitud a Epidemiología · MinSalud</strong>
+                <span>Dirige tu solicitud al Departamento de Epidemiología del Ministerio de Salud justificando el motivo del acceso. La respuesta se emite en un plazo máximo de 30 días.</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
