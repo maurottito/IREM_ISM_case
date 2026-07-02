@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { reviewRows } from '../../data/mock';
 import { StatusBadge } from '../../components/StatusBadge';
-import type { UploadStep } from '../../types';
+import type { CaseRecord, UploadStep } from '../../types';
 
 const ScanIcon = () => (
   <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -27,19 +27,88 @@ const CheckIcon = () => (
   </svg>
 );
 
+const MAX_DIMENSION = 1600; // downscale for lower latency / smaller payloads
+
+// Read a File, downscale it, and return { media_type, data } with base64 (no prefix).
+function fileToImagePart(file: File): Promise<{ media_type: string; data: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('No se pudo procesar la imagen.')); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve({ media_type: 'image/jpeg', data: dataUrl.split(',')[1] });
+      };
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen.'));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 interface UploadPageProps {
   onValidate: () => void;
 }
 
 export function UploadPage({ onValidate }: UploadPageProps) {
   const [step, setStep] = useState<UploadStep>('idle');
+  const [rows, setRows] = useState<CaseRecord[]>([]);
+  const [imageCount, setImageCount] = useState(0);
+  const [statusMsg, setStatusMsg] = useState('');
+  const [notice, setNotice] = useState<string | null>(null);
+  const exploreRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (step === 'processing') {
-      const t = setTimeout(() => setStep('review'), 2000);
-      return () => clearTimeout(t);
+  const needsReviewCount = rows.filter((r) => r.needsReview).length;
+
+  const handleFiles = async (fileList: FileList | null) => {
+    const files = Array.from(fileList ?? []).filter((f) => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    setImageCount(files.length);
+    setNotice(null);
+    setStatusMsg(`Preparando ${files.length} ${files.length === 1 ? 'imagen' : 'imágenes'}…`);
+    setStep('processing');
+
+    try {
+      const images = await Promise.all(files.map(fileToImagePart));
+      setStatusMsg('Leyendo las fotos con OCR…');
+
+      const res = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Error ${res.status}`);
+      }
+
+      const data = await res.json();
+      const parsed: CaseRecord[] = Array.isArray(data.rows) ? data.rows : [];
+      if (parsed.length === 0) throw new Error('No se detectaron registros en las imágenes.');
+
+      setRows(parsed);
+      setStep('review');
+    } catch (e) {
+      // Graceful fallback so the demo stays usable if the OCR endpoint/key is unavailable.
+      const detail = e instanceof Error ? e.message : String(e);
+      setRows(reviewRows);
+      setNotice(`No se pudo ejecutar el OCR (${detail}). Mostrando datos de ejemplo para que puedas continuar la revisión.`);
+      setStep('review');
     }
-  }, [step]);
+  };
 
   if (step === 'idle') {
     return (
@@ -58,17 +127,34 @@ export function UploadPage({ onValidate }: UploadPageProps) {
             <div>
               <p className="upload-title">Arrastra aquí las fotos de los registros</p>
               <p className="upload-sub">Toma una foto o sube la imagen del formato PDR en papel — el sistema lee los datos y los llena por ti</p>
-              <p className="upload-hint">Formatos aceptados: <code>.jpg</code> · <code>.png</code> · <code>.pdf</code></p>
+              <p className="upload-hint">Formatos aceptados: <code>.jpg</code> · <code>.png</code> · <code>.webp</code></p>
             </div>
             <div className="upload-actions">
-              <button type="button" className="btn btn-primary" onClick={() => setStep('processing')}>
+              <input
+                ref={exploreRef}
+                type="file"
+                accept="image/*"
+                multiple
+                style={{ display: 'none' }}
+                onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
+              />
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                style={{ display: 'none' }}
+                onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
+              />
+              <button type="button" className="btn btn-primary" onClick={() => exploreRef.current?.click()}>
                 <FolderIcon /> Explorar imágenes
               </button>
-              <button type="button" className="btn btn-outline" onClick={() => setStep('processing')}>
+              <button type="button" className="btn btn-outline" onClick={() => cameraRef.current?.click()}>
                 <CameraIcon /> Tomar foto
               </button>
             </div>
-            <p className="upload-hint">Máximo 50 imágenes por carga · Última carga hace 4 días</p>
+            <p className="upload-hint">Máximo 50 imágenes por carga · Selecciona varias a la vez</p>
           </div>
         </div>
       </div>
@@ -87,10 +173,10 @@ export function UploadPage({ onValidate }: UploadPageProps) {
           <div>
             <p className="upload-title">Leyendo las fotos…</p>
             <p className="upload-sub" style={{ maxWidth: 480 }}>
-              Estamos leyendo <strong>8 fotos</strong> del formato «Registro de pruebas diagnósticas» y llenando la tabla con la fecha de toma, la localidad, el motivo, el nombre, la identificación, el resultado PDR y el tipo de búsqueda.
+              Estamos leyendo <strong>{imageCount} {imageCount === 1 ? 'foto' : 'fotos'}</strong> del formato «Registro de pruebas diagnósticas» y llenando la tabla con la fecha de toma, la localidad, el motivo, el nombre, la identificación, el resultado PDR y el tipo de búsqueda.
             </p>
           </div>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-faint)' }}>Procesando… no cierres esta ventana</p>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-faint)' }}>{statusMsg || 'Procesando… no cierres esta ventana'}</p>
         </div>
       </div>
     );
@@ -102,14 +188,23 @@ export function UploadPage({ onValidate }: UploadPageProps) {
         <div className="page-title">Cargar registros de diagnóstico</div>
         <div className="page-subtitle">Revisa los datos extraídos y valida antes de consolidar</div>
       </div>
+      {notice && (
+        <div className="alert alert-info">
+          <strong>Modo de ejemplo</strong>
+          <span>{notice}</span>
+        </div>
+      )}
       <div className="alert alert-success">
         <strong>Listo — la tabla se llenó con las fotos</strong>
-        <span>Se leyeron <strong>42 registros</strong> de <strong>8 fotos</strong> del corregimiento de Llorente. Revisa los datos y corrige cualquier error antes de validar.</span>
+        <span>Se leyeron <strong>{rows.length} {rows.length === 1 ? 'registro' : 'registros'}</strong> de <strong>{imageCount} {imageCount === 1 ? 'foto' : 'fotos'}</strong>. Revisa los datos y corrige cualquier error antes de validar.</span>
       </div>
       <div className="section-row">
         <div>
           <p style={{ fontWeight: 700, fontSize: 17, color: 'var(--text-strong)', margin: 0 }}>Revisa y corrige los datos</p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>Mostrando 6 de 42 registros leídos de las fotos · 1 requiere atención</p>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>
+            Mostrando {rows.length} {rows.length === 1 ? 'registro leído' : 'registros leídos'} de las fotos
+            {needsReviewCount > 0 && ` · ${needsReviewCount} ${needsReviewCount === 1 ? 'requiere' : 'requieren'} atención`}
+          </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button type="button" className="btn btn-outline" onClick={() => setStep('idle')}>Subir más imágenes</button>
@@ -139,8 +234,8 @@ export function UploadPage({ onValidate }: UploadPageProps) {
               </tr>
             </thead>
             <tbody>
-              {reviewRows.map((row) => (
-                <tr key={row.id} className={row.needsReview ? 'flag-row' : ''}>
+              {rows.map((row, i) => (
+                <tr key={`${row.id}-${i}`} className={row.needsReview ? 'flag-row' : ''}>
                   <td><input className="rev-input" defaultValue={row.date} style={{ width: 88, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
                   <td>
                     <input className="rev-input" defaultValue={row.colvol} style={{ marginBottom: 2 }} />
@@ -167,7 +262,7 @@ export function UploadPage({ onValidate }: UploadPageProps) {
                   <td><input className="rev-input" defaultValue={row.fnac} style={{ width: 100, fontFamily: 'var(--font-mono)', fontSize: 12.5 }} /></td>
                   <td>
                     {row.needsReview ? (
-                      <select className="rev-select warn-select" defaultValue="">
+                      <select className="rev-select warn-select" defaultValue={['P. vivax','P. falciparum','Negativa','Inválida'].includes(row.result) ? row.result : ''}>
                         <option value="" disabled>⚠ Seleccionar…</option>
                         <option>P. vivax</option>
                         <option>P. falciparum</option>

@@ -13,9 +13,10 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/node": "^22.15.30",
     "@types/react": "^18.3.8",
     "@types/react-dom": "^18.3.0",
-    "@types/node": "^22.15.30",
+    "@vercel/node": "^5.8.22",
     "@vitejs/plugin-react": "^4.3.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.2"
