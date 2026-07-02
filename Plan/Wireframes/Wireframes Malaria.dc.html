@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/tokens/colors.css">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/tokens/typography.css">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/styles.css">
+<script src="_ds/ism-malaria-design-system-6c9de888-3ba0-40ee-801d-e22045173b35/_ds_bundle.js"></script>
+<script src="colombia-departments.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--font-sans); background: var(--surface-page); color: var(--text-body); }
+  .rev-input { border: 1px solid transparent; background: transparent; padding: 6px 8px; border-radius: 6px; font-family: var(--font-sans); font-size: 14px; color: var(--text-strong); width: 100%; outline: none; transition: all .12s; }
+  .rev-input:focus { border-color: var(--border-focus); background: #fff; box-shadow: var(--ring-focus); }
+  .rev-sel { border: 1px solid var(--border-default); background: #fff; padding: 5px 8px; border-radius: 8px; font-family: var(--font-sans); font-size: 13.5px; color: var(--text-strong); outline: none; }
+  .login-input { width: 100%; border: 1px solid var(--border-default); background: #fff; padding: 11px 13px 11px 40px; border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 14.5px; color: var(--text-strong); outline: none; transition: all .12s; }
+  .login-input:focus { border-color: var(--border-focus); box-shadow: var(--ring-focus); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</helmet>
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--surface-page);padding:24px;font-family:var(--font-sans)">
+    <div style="width:100%;max-width:404px;display:flex;flex-direction:column;gap:16px;animation:slideUp .3s var(--ease-out) both">
+      <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-md);overflow:hidden">
+        <div style="background:var(--neutral-900);padding:28px 28px 24px;display:flex;flex-direction:column;align-items:center;gap:13px">
+          <img src="assets/logo-ism-malaria-white.png" alt="RMEI · ISM Malaria" style="height:40px;width:auto">
+          <div style="text-align:center">
+            <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#fff;line-height:1.2">Vigilancia de malaria · RMEI</div>
+            <div style="font-size:12.5px;color:var(--neutral-400);margin-top:3px">Inicia sesión para acceder a tus herramientas</div>
+          </div>
+        </div>
+        <div style="padding:26px 28px;display:flex;flex-direction:column;gap:16px">
+          <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Alert" tone="danger" title="No se pudo iniciar sesión" hint-size="100%,64px">{{ loginError }}</x-import>
+          </sc-if>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-strong);margin-bottom:7px">Usuario</div>
+            <div style="position:relative;display:flex;align-items:center">
+              <span style="position:absolute;left:13px;display:flex;pointer-events:none">{{ userIcon }}</span>
+              <input ref="{{ userRef }}" class="login-input" placeholder="supervisor" autoComplete="username" onKeyDown="{{ onLoginKey }}">
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-strong);margin-bottom:7px">Contraseña</div>
+            <div style="position:relative;display:flex;align-items:center">
+              <span style="position:absolute;left:13px;display:flex;pointer-events:none">{{ lockIcon }}</span>
+              <input ref="{{ passRef }}" type="password" class="login-input" placeholder="••••••" autoComplete="current-password" onKeyDown="{{ onLoginKey }}">
+            </div>
+          </div>
+          <button onClick="{{ submitLogin }}" style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:none;padding:12px;border-radius:var(--radius-md);cursor:pointer;font-family:var(--font-sans);font-size:14.5px;font-weight:600;color:#fff;background:var(--green-500);margin-top:4px" onMouseOver="this.style.background='var(--green-600)'" onMouseOut="this.style.background='var(--green-500)'">{{ loginIcon }} Iniciar sesión</button>
+        </div>
+      </div>
+      <button onClick="{{ cancelLogin }}" style="width:100%;background:transparent;border:1px solid var(--border-default);padding:11px;border-radius:var(--radius-md);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600;color:var(--text-muted)" onMouseOver="this.style.background='var(--surface-sunken)'" onMouseOut="this.style.background='transparent'">Continuar sin iniciar sesión · ver panel epidemiológico</button>
+      <div style="background:var(--surface-sunken);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:12px 14px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px">Credenciales de prueba</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--text-body)">
+          <div style="display:flex;justify-content:space-between;gap:8px"><span>Supervisor</span><span style="font-family:var(--font-mono);color:var(--text-strong)">supervisor / 123456</span></div>
+          <div style="display:flex;justify-content:space-between;gap:8px"><span>Especialista</span><span style="font-family:var(--font-mono);color:var(--text-strong)">especialista / 654321</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;height:100vh;overflow:hidden;font-family:var(--font-sans);background:var(--surface-page)">
+  {{ sidebar }}
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+    <header style="height:60px;flex-shrink:0;background:var(--surface-card);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;padding:0 26px;gap:18px;z-index:5">
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--text-strong);line-height:1.1">{{ persona.title }}</div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-top:1px">{{ persona.sub }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;background:var(--surface-page);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-faint);width:220px">
+        {{ searchIcon }}
+        <input placeholder="Buscar ID de caso…" style="border:none;background:transparent;outline:none;font-family:var(--font-sans);font-size:13.5px;width:100%;color:var(--text-body)">
+      </div>
+      <div style="position:relative;width:38px;height:38px;border-radius:var(--radius-md);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;color:var(--text-body);cursor:pointer">
+        {{ bellIcon }}
+        <span style="position:absolute;top:-3px;right:-3px;width:7px;height:7px;border-radius:50%;background:var(--status-positive-500);border:1.5px solid #fff"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding-left:14px;border-left:1px solid var(--border-subtle)">
+        <div style="text-align:right">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-strong);line-height:1.15">{{ identity.user }}</div>
+          <div style="font-size:11.5px;color:var(--text-muted)">{{ identity.role }}</div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:{{ identity.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.02em">{{ identity.initials }}</div>
+      </div>
+    </header>
+    <main style="flex:1;overflow-y:auto">
+
+      <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:26px;max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-strong)">Cargar registros de diagnóstico</div>
+            <div style="font-size:14px;color:var(--text-muted);margin-top:3px">Sube los formatos PDR digitalizados de tus colaboradores voluntarios</div>
+          </div>
+
+          <sc-if value="{{ stepIdle }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Alert" tone="info" title="Digitaliza el Registro de pruebas diagnósticas" hint-size="100%,74px">Sube las fotos del formato «Registro de pruebas diagnósticas» (Anexo 1) llenado a mano por el ColVol. El sistema lee las fotos y llena una tabla por ti — solo revisa, corrige lo que haga falta y valida antes de subir.</x-import>
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:26px">
+                <div style="border:2px dashed var(--border-default);border-radius:var(--radius-lg);background:var(--surface-page);padding:52px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:15px">
+                  <div style="width:66px;height:66px;border-radius:18px;background:var(--green-50);color:var(--green-600);display:flex;align-items:center;justify-content:center">{{ scanIcon }}</div>
+                  <div>
+                    <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-strong)">Arrastra aquí las fotos de los registros</div>
+                    <div style="font-size:13.5px;color:var(--text-muted);margin-top:5px">Toma una foto o sube la imagen del formato PDR en papel — el sistema lee los datos y los llena por ti</div>
+                    <div style="font-size:12.5px;color:var(--text-faint);margin-top:6px">Formatos aceptados: <b style="font-family:var(--font-mono);font-size:12px">.jpg</b> · <b style="font-family:var(--font-mono);font-size:12px">.png</b> · <b style="font-family:var(--font-mono);font-size:12px">.pdf</b></div>
+                  </div>
+                  <div style="display:flex;gap:10px;margin-top:2px">
+                    <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="primary" onClick="{{ doUpload }}" hint-size="auto,40px">{{ browseIcon }} Explora imágenes</x-import>
+                    <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="outline" onClick="{{ doUpload }}" hint-size="auto,40px">{{ cameraIcon }} Tomar foto</x-import>
+                  </div>
+                  <div style="font-size:12px;color:var(--text-faint)">Máximo 50 imágenes por carga · Última carga hace 4 días</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepProcessing }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:slideUp .28s var(--ease-out) both;background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:44px 26px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px">
+              <div style="width:70px;height:70px;border-radius:50%;border:3px solid var(--green-100);border-top-color:var(--green-500);animation:spin .9s linear infinite"></div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text-strong)">Leyendo las fotos…</div>
+                <div style="font-size:13.5px;color:var(--text-muted);margin-top:5px">Estamos leyendo <b>8 fotos</b> del formato «Registro de pruebas diagnósticas» y llenando la tabla con la fecha de toma, la localidad, el motivo, el nombre, la identificación, el resultado PDR y el tipo de búsqueda.</div>
+              </div>
+              <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-faint)">Procesando… no cierres esta ventana</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepReview }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:slideUp .28s var(--ease-out) both;display:flex;flex-direction:column;gap:18px">
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Alert" tone="success" title="Listo — la tabla se llenó con las fotos" hint-size="100%,74px">Se leyeron <b>42 registros</b> de <b>8 fotos</b> del corregimiento de Llorente. Revisa los datos y corrige cualquier error antes de validar.</x-import>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+                <div>
+                  <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-strong)">Revisa y corrige los datos</div>
+                  <div style="font-size:13px;color:var(--text-muted);margin-top:2px">Mostrando 6 de 42 registros leídos de las fotos · 1 requiere atención</div>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="outline" onClick="{{ resetUpload }}" hint-size="auto,40px">Subir más imágenes</x-import>
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="primary" onClick="{{ doValidate }}" hint-size="auto,40px">{{ checkIcon }} Validar registros</x-import>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);overflow:hidden">
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;font-family:var(--font-sans);min-width:1440px">
+                    <thead><tr>
+                      <th style="{{ thStyle }}">Fecha toma</th>
+                      <th style="{{ thStyle }}">Colaborador (ColVol)</th>
+                      <th style="{{ thStyle }}">Cód. muestra</th>
+                      <th style="{{ thStyle }}">Localidad</th>
+                      <th style="{{ thStyle }}">Motivo</th>
+                      <th style="{{ thStyle }}">Nombre completo</th>
+                      <th style="{{ thStyle }}">Identificación</th>
+                      <th style="{{ thStyle }}">Nacionalidad</th>
+                      <th style="{{ thStyle }}">Sexo</th>
+                      <th style="{{ thStyle }}">Fecha nac.</th>
+                      <th style="{{ thStyle }}">PDR</th>
+                      <th style="{{ thStyle }}">Tipo de búsqueda</th>
+                      <th style="{{ thStyle }}">¿Medicamento?</th>
+                    </tr></thead>
+                    <tbody>
+                      <sc-for list="{{ reviewRows }}" as="row" hint-placeholder-count="6">
+                        <tr style="background:{{ row.rowBg }};border-top:1px solid var(--border-subtle)">
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.fecha }}" style="width:96px;font-family:var(--font-mono);font-size:12.5px"></td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.colvolN }}" style="margin-bottom:2px"><input class="rev-input" defaultValue="{{ row.colvolC }}" style="font-family:var(--font-mono);font-size:11.5px"></td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.codigo }}" style="width:104px;font-family:var(--font-mono);font-size:12.5px"></td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.localidad }}"></td>
+                          <td style="{{ tdStyle }};padding:6px 10px">{{ row.motivoCell }}</td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.nombre }}"></td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.ident }}" style="font-family:var(--font-mono);font-size:12.5px"></td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.nacionalidad }}"></td>
+                          <td style="{{ tdStyle }};padding:6px 10px">{{ row.sexoCell }}</td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.fnac }}" style="width:104px;font-family:var(--font-mono);font-size:12.5px"></td>
+                          <td style="{{ tdStyle }};padding:6px 10px">{{ row.pdrCell }}</td>
+                          <td style="{{ tdStyle }};padding:6px 10px">{{ row.busquedaCell }}</td>
+                          <td style="{{ tdStyle }};padding:4px 8px"><input class="rev-input" defaultValue="{{ row.medic }}" style="width:120px"></td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div style="font-size:12.5px;color:var(--text-faint)">Los registros validados se sincronizan con el consolidado regional y quedan disponibles para especialistas y gerentes.</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:26px;max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-strong)">Búsqueda de registros</div>
+            <div style="font-size:14px;color:var(--text-muted);margin-top:3px">Filtra el consolidado local y expórtalo a Excel para tu seguimiento · Filter &amp; export records</div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:22px">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Input" label="Fecha inicio" type="date" defaultValue="2026-06-01" hint-size="100%,66px"></x-import>
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Input" label="Fecha fin" type="date" defaultValue="2026-06-30" hint-size="100%,66px"></x-import>
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Localidad" hint-size="100%,66px"><option>Todas</option><option>Llorente</option><option>Espriella</option><option>Tumaco</option><option>Chajal</option><option>San Luis</option></x-import>
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Colaborador (ColVol)" hint-size="100%,66px"><option>Todos</option><option>D. Angulo · ColVol-01</option><option>R. Caicedo · ColVol-02</option><option>L. Quiñones · ColVol-03</option><option>M. Prado · ColVol-04</option></x-import>
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Input" label="Nombre" placeholder="Buscar por nombre…" hint-size="100%,66px"></x-import>
+            </div>
+            <div style="margin-top:18px">
+              <div style="font-size:13px;font-weight:600;color:var(--text-strong);margin-bottom:9px">Resultado del diagnóstico</div>
+              {{ resultChips }}
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border-subtle)">
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="ghost" hint-size="auto,40px">Limpiar</x-import>
+              <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="primary" onClick="{{ doSearch }}" hint-size="auto,40px">{{ filterIcon }} Buscar registros</x-import>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div style="font-size:13.5px;color:var(--text-muted)">Mostrando <b style="color:var(--text-strong)">{{ searchShown }}</b> de <b style="color:var(--text-strong)">{{ searchTotal }}</b> registros</div>
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="secondary" onClick="{{ doDownload }}" hint-size="auto,40px">{{ downloadIcon }} Descargar registros</x-import>
+          </div>
+          <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);overflow:hidden">{{ searchTable }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isApi }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:26px;max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+          <div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-strong)">Descarga de datos de vigilancia</div>
+            <div style="font-size:14px;color:var(--text-muted);margin-top:3px">Accede al consolidado regional anonimizado vía API o descarga manual filtrada · Programmatic &amp; manual access</div>
+          </div>
+
+          <div style="display:flex;gap:4px;background:var(--surface-sunken);padding:4px;border-radius:var(--radius-md);width:fit-content;border:1px solid var(--border-subtle)">
+            <button onClick="{{ setTabApi }}" style="{{ tabApiStyle }}">{{ codeIcon }} Uso de la API</button>
+            <button onClick="{{ setTabManual }}" style="{{ tabManualStyle }}">{{ filterIcon }} Filtro manual</button>
+          </div>
+
+          <sc-if value="{{ apiIsApi }}" hint-placeholder-val="{{ true }}">
+            <div style="animation:slideUp .24s var(--ease-out) both;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:start">
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);overflow:hidden">
+                  <div style="height:3px;background:var(--blue-500)"></div>
+                  <div style="padding:20px 22px">
+                    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text-strong);margin-bottom:4px">Pasos para consumir la API</div>
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Endpoint REST · datos anonimizados · actualización diaria</div>
+                    {{ apiSteps }}
+                  </div>
+                </div>
+                <div style="background:var(--neutral-900);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);overflow:hidden">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,0.08)">
+                    <span style="font-family:var(--font-mono);font-size:12px;color:var(--neutral-400);letter-spacing:.03em">ejemplo — Python (requests)</span>
+                    <button onClick="{{ copyCode }}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:none;color:var(--neutral-200);font-family:var(--font-sans);font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer">{{ copyIcon }} Copiar</button>
+                  </div>
+                  <pre style="margin:0;padding:18px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--neutral-200)">{{ codeSnippet }}</pre>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:9px">Tu clave de API</div>
+                  <div style="display:flex;align-items:center;gap:8px;background:var(--surface-sunken);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px">
+                    <span style="flex:1;font-family:var(--font-mono);font-size:13px;color:var(--text-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">rmei_live_a3f9•••••••••2b71</span>
+                    <button onClick="{{ copyKey }}" style="display:flex;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:2px">{{ copyIcon }}</button>
+                  </div>
+                  <div style="font-size:12px;color:var(--text-faint);margin-top:9px">Regenerada hace 12 días · Ámbito: solo lectura, Nariño</div>
+                </div>
+                <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:11px">Endpoints disponibles</div>
+                  {{ endpointList }}
+                </div>
+                <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Alert" tone="info" title="Datos anonimizados" hint-size="100%,90px">Todos los registros de la API se entregan sin identificadores personales, conforme al protocolo de datos de la RMEI.</x-import>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ apiIsManual }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:slideUp .24s var(--ease-out) both;display:flex;flex-direction:column;gap:20px">
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:22px">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Región" hint-size="100%,66px"><option>Nariño</option><option>Chocó</option><option>Cauca</option><option>Amazonas</option></x-import>
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Distrito" hint-size="100%,66px"><option>Tumaco</option><option>Barbacoas</option><option>Roberto Payán</option><option>Todos</option></x-import>
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Localidad" hint-size="100%,66px"><option>Todas</option><option>Llorente</option><option>Espriella</option><option>Chajal</option></x-import>
+                  <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Select" label="Periodo" hint-size="100%,66px"><option>Junio 2026</option><option>Q2 2026</option><option>Año 2026</option></x-import>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:18px;border-top:1px solid var(--border-subtle)">
+                  <div style="font-size:13px;color:var(--text-muted)">Vista previa: <b style="color:var(--text-strong)">1.284</b> registros anonimizados coinciden</div>
+                  <div style="display:flex;gap:10px">
+                    <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="outline" onClick="{{ dlCsv }}" hint-size="auto,40px">{{ downloadIcon }} CSV</x-import>
+                    <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.Button" variant="primary" onClick="{{ dlXlsx }}" hint-size="auto,40px">{{ downloadIcon }} Descargar Excel</x-import>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);overflow:hidden">
+                <div style="padding:14px 18px;border-bottom:1px solid var(--border-subtle);font-size:13px;font-weight:600;color:var(--text-strong)">Vista previa del conjunto de datos <span style="font-weight:400;color:var(--text-faint)">· sin identificadores personales</span></div>
+                {{ manualTable }}
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:26px;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px">
+            <div>
+              <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text-strong)">Panel epidemiológico · Nariño</div>
+              <div style="font-size:14px;color:var(--text-muted);margin-top:3px">Vigilancia de casos de malaria por territorio y tendencia · Semana epidemiológica 2026‑W26</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-end">
+              <div>
+                <div style="font-size:11.5px;font-weight:600;color:var(--text-muted);margin-bottom:5px">Región</div>
+                <select class="rev-sel" style="height:38px;min-width:150px" value="{{ currentRegion }}" onChange="{{ onRegionChange }}">
+                  <sc-for list="{{ regionOptions }}" as="opt" hint-placeholder-count="4"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:11.5px;font-weight:600;color:var(--text-muted);margin-bottom:5px">Distrito</div>
+                <select class="rev-sel" style="height:38px"><option>Todos</option><option>Tumaco</option><option>Barbacoas</option></select>
+              </div>
+              <div>
+                <div style="font-size:11.5px;font-weight:600;color:var(--text-muted);margin-bottom:5px">Periodo</div>
+                <select class="rev-sel" style="height:38px"><option>Últimas 12 semanas</option><option>Año 2026</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.StatCard" label="Casos confirmados" value="1.284" delta="+8.2%" trend="up" hint-size="100%,116px"></x-import>
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.StatCard" label="Tasa de positividad" value="12.4%" delta="-1.1%" trend="down" hint-size="100%,116px"></x-import>
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.StatCard" label="Casos por 1.000 hab" value="3.6" delta="+0.4" trend="up" hint-size="100%,116px"></x-import>
+            <x-import component-from-global-scope="ISMMalariaDesignSystem_6c9de8.StatCard" label="Localidades activas" value="18" delta="de 24" trend="flat" hint-size="100%,116px"></x-import>
+          </div>
+
+            <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text-strong)">Casos por región</div>
+                <span style="font-size:12px;color:var(--text-faint)">Colombia · resaltado {{ currentRegion }}</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Departamento en vigilancia según el filtro de región</div>
+              <div style="display:flex;gap:18px;align-items:stretch">
+                <div style="flex:1;min-width:0;height:400px;display:flex;align-items:center;justify-content:center;background:var(--surface-page);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px">{{ colombiaMap }}</div>
+                <div style="width:190px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="width:11px;height:11px;border-radius:3px;background:var(--green-500);flex-shrink:0"></span><span style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text-strong)">{{ currentRegion }}</span></div>
+                    <div style="font-size:12px;color:var(--text-faint)">Departamento resaltado</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:11px">
+                    <div style="padding:11px 13px;background:var(--surface-page);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+                      <div style="font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted)">Casos confirmados</div>
+                      <div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text-strong);margin-top:2px">{{ regionCases }}</div>
+                    </div>
+                    <div style="display:flex;gap:11px">
+                      <div style="flex:1;padding:11px 13px;background:var(--surface-page);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+                        <div style="font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-muted)">Positividad</div>
+                        <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-strong);margin-top:2px">{{ regionPos }}</div>
+                      </div>
+                      <div style="flex:1;padding:11px 13px;background:var(--surface-page);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+                        <div style="font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-muted)">Var. sem.</div>
+                        <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-strong);margin-top:2px">{{ regionTrend }}</div>
+                      </div>
+                    </div>
+                    <div style="padding:11px 13px;background:var(--surface-page);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+                      <div style="font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-muted)">Localidades activas</div>
+                      <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text-strong);margin-top:2px">{{ regionLocalities }}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+                    <span style="width:13px;height:9px;border-radius:2px;background:var(--neutral-100);border:1px solid var(--border-default)"></span>
+                    <span style="font-size:11.5px;color:var(--text-faint)">Resto del país sin datos filtrados</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text-strong)">Casos por 1.000 habitantes</div>
+                <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">Incidencia semanal · últimas 12 semanas</div>
+                {{ incidenceChart }}
+              </div>
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text-strong)">Tasa de positividad</div>
+                <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">% de pruebas positivas · últimas 12 semanas</div>
+                {{ positivityChart }}
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text-strong)">Casos por grupo de edad y sexo</div>
+                <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">Distribución de casos confirmados · acumulado 2026</div>
+                {{ ageSexChart }}
+              </div>
+              <div style="background:#fff;border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);padding:20px 22px">
+                <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text-strong)">Resultado PDR por tipo de búsqueda</div>
+                <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">Pruebas realizadas según la estrategia de búsqueda · acumulado 2026</div>
+                {{ pdrBusquedaChart }}
+              </div>
+            </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;align-items:center;gap:11px;background:var(--neutral-900);color:#fff;padding:13px 20px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);animation:slideUp .24s var(--ease-out) both;font-size:14px;font-weight:500">
+      <span style="width:20px;height:20px;border-radius:50%;background:var(--status-negative-500);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700">✓</span>
+      {{ toast }}
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:840},&quot;highlightRegion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Nariño&quot;,&quot;options&quot;:[&quot;Nariño&quot;,&quot;Chocó&quot;,&quot;Cauca&quot;,&quot;Valle del Cauca&quot;,&quot;Antioquia&quot;,&quot;Córdoba&quot;,&quot;Amazonas&quot;,&quot;Putumayo&quot;,&quot;Guaviare&quot;,&quot;Vichada&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Panel epidemiológico&quot;}}">
+class Component extends DCLogic {
+  state = { role: 'guest', view: 'app', loginError: null, route: 'dashboard', uploadStep: 'idle', toast: null, filters: { pv: true, pf: true, neg: false, inv: false }, apiTab: 'api', dashRegion: null };
+
+  get DS() { return window.ISMMalariaDesignSystem_6c9de8 || {}; }
+
+  userRef = React.createRef();
+  passRef = React.createRef();
+
+  roleRoutes() {
+    return {
+      guest: ['dashboard'],
+      supervisor: ['upload', 'search', 'dashboard'],
+      especialista: ['api', 'dashboard'],
+    };
+  }
+
+  identities() {
+    return {
+      guest: { user: 'Invitado', role: 'Consulta pública · Gerencia', initials: 'IN', avatarBg: 'var(--neutral-500)' },
+      supervisor: { user: 'James Torres', role: 'Supervisor · Tumaco, Nariño', initials: 'JT', avatarBg: 'var(--blue-500)' },
+      especialista: { user: 'Marco Fernández', role: 'Especialista de datos · MinSalud', initials: 'MF', avatarBg: 'var(--green-600)' },
+    };
+  }
+
+  openLogin() { this.setState({ view: 'login', loginError: null }); }
+  cancelLogin() { this.setState({ view: 'app', loginError: null }); }
+
+  submitLogin() {
+    const u = (this.userRef.current ? this.userRef.current.value : '').trim();
+    const p = (this.passRef.current ? this.passRef.current.value : '').trim();
+    if (u === 'supervisor' && p === '123456') {
+      this.setState({ role: 'supervisor', route: 'upload', view: 'app', loginError: null });
+    } else if (u === 'especialista' && p === '654321') {
+      this.setState({ role: 'especialista', route: 'api', view: 'app', loginError: null });
+    } else {
+      this.setState({ loginError: 'Usuario o contraseña incorrectos. Verifica tus credenciales.' });
+    }
+  }
+
+  logout() { this.setState({ role: 'guest', route: 'dashboard', view: 'app', loginError: null }); }
+
+  get currentRegion() { return this.state.dashRegion || this.props.highlightRegion || 'Nariño'; }
+
+  doValidate() {
+    this.fireToast('42 registros validados y sincronizados con el consolidado regional');
+    clearTimeout(this._nav);
+    this._nav = setTimeout(() => this.setState({ route: 'search', justAdded: true, uploadStep: 'idle' }), 2000);
+  }
+
+  fireToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  ic(name, size, stroke) {
+    const R = React.createElement;
+    const P = {
+      upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12'],
+      search: ['M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', 'M21 21l-4.3-4.3'],
+      download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
+      dashboard: ['M3 3h8v8H3z', 'M13 3h8v5h-8z', 'M13 12h8v9h-8z', 'M3 15h8v6H3z'],
+      bell: ['M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9', 'M10.3 21a1.94 1.94 0 0 0 3.4 0'],
+      logout: ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
+      login: ['M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4', 'M10 17l5-5-5-5', 'M15 12H3'],
+      lock: ['M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z', 'M7 11V7a5 5 0 0 1 10 0v4'],
+      user: ['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+      camera: ['M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z', 'M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+      scan: ['M3 7V5a2 2 0 0 1 2-2h2', 'M17 3h2a2 2 0 0 1 2 2v2', 'M21 17v2a2 2 0 0 1-2 2h-2', 'M7 21H5a2 2 0 0 1-2-2v-2', 'M7 12h10'],
+      image: ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'M8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z', 'M21 15l-5-5L5 21'],
+      settings: ['M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'],
+      book: ['M4 19.5A2.5 2.5 0 0 1 6.5 17H20', 'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'],
+      check: ['M20 6L9 17l-5-5'],
+      folder: ['M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z'],
+      filter: ['M22 3H2l8 9.46V19l4 2v-8.54z'],
+      calendar: ['M8 2v4', 'M16 2v4', 'M3 8h18', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+      pin: ['M12 21s-6-5.7-6-10a6 6 0 0 1 12 0c0 4.3-6 10-6 10z', 'M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'],
+      chevron: ['M6 9l6 6 6-6'],
+      code: ['M16 18l6-6-6-6', 'M8 6l-6 6 6 6'],
+      copy: ['M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z', 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'],
+      external: ['M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6', 'M15 3h6v6', 'M10 14L21 3'],
+      link: ['M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1', 'M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1'],
+      drop: ['M12 2.7s6 6.3 6 10.3a6 6 0 0 1-12 0c0-4 6-10.3 6-10.3z'],
+      activity: ['M22 12h-4l-3 9L9 3l-3 9H2'],
+      trendDown: ['M23 18l-9.5-9.5-5 5L1 6', 'M17 18h6v-6'],
+      users: ['M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M23 21v-2a4 4 0 0 0-3-3.87', 'M16 3.13a4 4 0 0 1 0 7.75'],
+    };
+    const d = P[name] || [];
+    return R('svg', { width: size || 20, height: size || 20, viewBox: '0 0 24 24', fill: 'none', stroke: stroke || 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, d.map((x, i) => R('path', { key: i, d: x })));
+  }
+
+  buildSidebar() {
+    const R = React.createElement;
+    const route = this.state.route;
+    const role = this.state.role;
+    const allowed = this.roleRoutes()[role] || ['dashboard'];
+    const allGroups = [
+      { label: 'Supervisor', items: [
+        { id: 'upload', label: 'Cargar registros', icon: 'upload' },
+        { id: 'search', label: 'Buscar y descargar', icon: 'search' },
+      ] },
+      { label: 'Especialista', items: [
+        { id: 'api', label: 'Descarga de datos', icon: 'download' },
+      ] },
+      { label: 'Consulta', items: [
+        { id: 'dashboard', label: 'Panel epidemiológico', icon: 'dashboard' },
+      ] },
+    ];
+    const groups = allGroups
+      .map((g) => ({ label: g.label, items: g.items.filter((it) => allowed.indexOf(it.id) !== -1) }))
+      .filter((g) => g.items.length);
+    const navBtn = (it) => {
+      const active = route === it.id;
+      return R('button', {
+        key: it.id,
+        onClick: () => this.setState({ route: it.id }),
+        onMouseEnter: (e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; },
+        onMouseLeave: (e) => { if (!active) e.currentTarget.style.background = 'transparent'; },
+        style: {
+          display: 'flex', alignItems: 'center', gap: 11, width: '100%', border: 'none',
+          padding: '9px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left',
+          fontFamily: 'var(--font-sans)', fontSize: 14.5, fontWeight: active ? 600 : 500,
+          color: active ? '#fff' : 'var(--neutral-300)',
+          background: active ? 'rgba(255,255,255,0.14)' : 'transparent',
+          transition: 'all .12s',
+        },
+      },
+        R('span', { style: { display: 'flex', color: active ? 'var(--green-300)' : 'inherit' } }, this.ic(it.icon, 19)),
+        R('span', { style: { flex: 1 } }, it.label),
+      );
+    };
+    return R('aside', { style: { width: 248, flexShrink: 0, background: 'var(--neutral-900)', display: 'flex', flexDirection: 'column', padding: '18px 14px', gap: 4 } },
+      R('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px 16px' } },
+        R('img', { src: 'assets/logo-ism-malaria-white.png', alt: 'ISM Malaria', style: { height: 30, width: 'auto' } }),
+      ),
+      groups.map((g) => R('div', { key: g.label, style: { marginTop: 6 } },
+        R('div', { style: { fontSize: 10.5, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--neutral-500)', padding: '6px 12px 5px' } }, g.label),
+        R('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } }, g.items.map(navBtn)),
+      )),
+      R('div', { style: { flex: 1 } }),
+      role !== 'guest' ? navBtn({ id: 'settings', label: 'Configuración', icon: 'settings' }) : null,
+      this.buildSidebarFooter(),
+    );
+  }
+
+  buildSidebarFooter() {
+    const R = React.createElement;
+    const role = this.state.role;
+    const id = this.identities()[role] || this.identities().guest;
+    if (role === 'guest') {
+      return R('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 4px 4px', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: 8 } },
+        R('div', { style: { fontSize: 12, color: 'var(--neutral-400)', lineHeight: 1.5, padding: '0 8px' } }, 'Estás viendo el panel público. Inicia sesión para acceder a tus herramientas.'),
+        R('button', {
+          onClick: () => this.openLogin(),
+          onMouseEnter: (e) => { e.currentTarget.style.background = 'var(--green-600)'; },
+          onMouseLeave: (e) => { e.currentTarget.style.background = 'var(--green-500)'; },
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, width: '100%', border: 'none',
+            padding: '10px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: '#fff',
+            background: 'var(--green-500)', transition: 'background .12s',
+          },
+        }, this.ic('login', 18), 'Iniciar sesión'),
+      );
+    }
+    return R('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 8px 4px', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: 8 } },
+      R('div', { style: { width: 34, height: 34, borderRadius: '50%', background: id.avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 700 } }, id.initials),
+      R('div', { style: { flex: 1, minWidth: 0 } },
+        R('div', { style: { fontSize: 13, fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, id.user),
+        R('div', { style: { fontSize: 11, color: 'var(--neutral-500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, id.role),
+      ),
+      R('button', {
+        onClick: () => this.logout(),
+        title: 'Cerrar sesión',
+        onMouseEnter: (e) => { e.currentTarget.style.color = '#fff'; },
+        onMouseLeave: (e) => { e.currentTarget.style.color = 'var(--neutral-500)'; },
+        style: { color: 'var(--neutral-500)', display: 'flex', cursor: 'pointer', background: 'none', border: 'none', padding: 2, transition: 'color .12s' },
+      }, this.ic('logout', 17)),
+    );
+  }
+
+  pill(status, label) {
+    return React.createElement(this.DS.StatusBadge, { status }, label);
+  }
+
+  buildReviewRows() {
+    const R = React.createElement;
+    const pdrPill = (v) => {
+      if (v === 'Negativa') return this.pill('negative', 'Negativa');
+      if (v === 'Inválida') return this.pill('pending', 'Inválida');
+      return this.pill('positive', v);
+    };
+    const sel = (value, options, extra) => R('select', Object.assign({ className: 'rev-sel', defaultValue: value }, extra || {}),
+      options.map((op) => R('option', { key: op }, op)));
+    const warnSel = (options) => R('select', { className: 'rev-sel', defaultValue: '', style: { borderColor: 'var(--status-pending-500)', color: 'var(--status-pending-700)', fontWeight: 600 } },
+      [R('option', { key: '_', value: '', disabled: true }, '⚠ Seleccionar…')].concat(options.map((op) => R('option', { key: op }, op))));
+    const PDR = ['P. vivax', 'P. falciparum', 'Negativa', 'Inválida'];
+    const mk = (o) => {
+      return {
+        fecha: o.fecha, colvolN: o.colvolN, colvolC: o.colvolC, codigo: o.codigo, localidad: o.localidad,
+        nombre: o.nombre, ident: o.ident, nacionalidad: o.nacionalidad,
+        fnac: o.fnac, medic: o.medic,
+        motivoCell: sel(o.motivo, ['Sospechoso', 'Conviviente', 'Seguimiento']),
+        sexoCell: sel(o.sexo, ['M', 'H'], { style: { width: 62 } }),
+        pdrCell: o.flag ? warnSel(PDR) : sel(o.pdr, PDR),
+        busquedaCell: sel(o.busqueda, ['Pasiva', 'Proactiva', 'Reactiva']),
+        rowBg: o.flag ? 'var(--status-pending-50)' : 'transparent',
+      };
+    };
+    return [
+      mk({ fecha: '24/06/26', colvolN: 'D. Angulo', colvolC: 'ColVol-01', codigo: 'NAR-2231', localidad: 'Llorente', motivo: 'Sospechoso', nombre: 'María Prado', ident: 'CC 1.087.334', nacionalidad: 'Colombiana', sexo: 'M', fnac: '12/03/1999', pdr: 'P. falciparum', busqueda: 'Pasiva', medic: 'No' }),
+      mk({ fecha: '24/06/26', colvolN: 'D. Angulo', colvolC: 'ColVol-01', codigo: 'NAR-2232', localidad: 'Llorente', motivo: 'Conviviente', nombre: 'José Landázuri', ident: 'CC 1.088.771', nacionalidad: 'Colombiana', sexo: 'H', fnac: '07/11/1985', pdr: 'Negativa', busqueda: 'Reactiva', medic: 'No' }),
+      mk({ fecha: '23/06/26', colvolN: 'R. Caicedo', colvolC: 'ColVol-02', codigo: 'NAR-2233', localidad: 'Espriella', motivo: 'Sospechoso', nombre: 'Ana Cortés', ident: 'TI 1.010.556', nacionalidad: 'Colombiana', sexo: 'M', fnac: '22/09/2018', pdr: 'P. vivax', busqueda: 'Pasiva', medic: 'No' }),
+      mk({ fecha: '23/06/26', colvolN: 'R. Caicedo', colvolC: 'ColVol-02', codigo: 'NAR-2234', localidad: 'Tumaco', motivo: 'Seguimiento', nombre: 'Luis Quiñónez', ident: 'CC 1.234.889', nacionalidad: 'Colombiana', sexo: 'H', fnac: '03/02/1993', pdr: 'Negativa', busqueda: 'Proactiva', medic: 'Sí · Cloroquina' }),
+      mk({ fecha: '22/06/26', colvolN: 'L. Quiñones', colvolC: 'ColVol-03', codigo: 'NAR-2235', localidad: 'Chajal', motivo: 'Conviviente', nombre: 'Rosa Angulo', ident: 'CE 5.667.201', nacionalidad: 'Venezolana', sexo: 'M', fnac: '15/06/2007', flag: true, busqueda: 'Proactiva', medic: 'No' }),
+      mk({ fecha: '22/06/26', colvolN: 'L. Quiñones', colvolC: 'ColVol-03', codigo: 'NAR-2236', localidad: 'San Luis', motivo: 'Sospechoso', nombre: 'Jhon Caicedo', ident: 'CC 987.554', nacionalidad: 'Colombiana', sexo: 'H', fnac: '30/08/1974', pdr: 'P. vivax', busqueda: 'Reactiva', medic: 'No' }),
+    ];
+  }
+
+  especieCell(v) {
+    const R = React.createElement;
+    if (!v || v === '—') return R('span', { style: { color: 'var(--text-faint)' } }, '—');
+    const cmap = { 'P. falciparum': 'var(--species-falciparum)', 'P. vivax': 'var(--species-vivax)', 'P. malariae': 'var(--species-malariae)', 'Mixta': 'var(--species-mixed)' };
+    return R('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7, fontStyle: 'italic', whiteSpace: 'nowrap' } },
+      R('span', { style: { width: 8, height: 8, borderRadius: 2, background: cmap[v] || 'var(--neutral-400)', flexShrink: 0 } }), v);
+  }
+
+  buildTable(columns, rows) {
+    return React.createElement(this.DS.Table, { columns, rows, style: { border: 'none', borderRadius: 0 } });
+  }
+
+  buildSearchTable() {
+    const R = React.createElement;
+    const mono = (v) => R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-strong)' } }, v);
+    const dt = (v) => R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-muted)' } }, v);
+    const colvol = (v) => R('span', { style: { display: 'inline-flex', flexDirection: 'column', lineHeight: 1.25 } },
+      R('span', { style: { fontSize: 13.5, color: 'var(--text-body)' } }, v.n),
+      R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--text-faint)' } }, v.c));
+    const idcode = (v) => R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' } }, v);
+    const columns = [
+      { key: 'fecha', header: 'Fecha toma', render: dt },
+      { key: 'codigo', header: 'Cód. muestra', render: mono },
+      { key: 'localidad', header: 'Localidad' },
+      { key: 'colvol', header: 'Colaborador (ColVol)', render: colvol },
+      { key: 'motivo', header: 'Motivo' },
+      { key: 'nombre', header: 'Nombre completo' },
+      { key: 'ident', header: 'Identificación', render: idcode },
+      { key: 'nacionalidad', header: 'Nacionalidad' },
+      { key: 'sexo', header: 'Sexo', align: 'center' },
+      { key: 'fnac', header: 'Fecha nac.', render: dt },
+      { key: 'pdr', header: 'PDR', render: (v) => this.pill(v.s, v.l) },
+      { key: 'busqueda', header: 'Tipo de búsqueda' },
+      { key: 'medic', header: '¿Medicamento?' },
+    ];
+    const newRows = [
+      { codigo: 'NAR-2231', fecha: '24/06/26', localidad: 'Llorente', colvol: { n: 'D. Angulo', c: 'ColVol-01' }, motivo: 'Sospechoso', nombre: 'María Prado', ident: 'CC 1.087.334', nacionalidad: 'Colombiana', sexo: 'M', fnac: '12/03/1999', pdr: { s: 'positive', l: 'P. falciparum' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-2232', fecha: '24/06/26', localidad: 'Llorente', colvol: { n: 'D. Angulo', c: 'ColVol-01' }, motivo: 'Conviviente', nombre: 'José Landázuri', ident: 'CC 1.088.771', nacionalidad: 'Colombiana', sexo: 'H', fnac: '07/11/1985', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Reactiva', medic: 'No' },
+      { codigo: 'NAR-2233', fecha: '23/06/26', localidad: 'Espriella', colvol: { n: 'R. Caicedo', c: 'ColVol-02' }, motivo: 'Sospechoso', nombre: 'Ana Cortés', ident: 'TI 1.010.556', nacionalidad: 'Colombiana', sexo: 'M', fnac: '22/09/2018', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-2234', fecha: '23/06/26', localidad: 'Tumaco', colvol: { n: 'R. Caicedo', c: 'ColVol-02' }, motivo: 'Seguimiento', nombre: 'Luis Quiñónez', ident: 'CC 1.234.889', nacionalidad: 'Colombiana', sexo: 'H', fnac: '03/02/1993', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Proactiva', medic: 'Sí · Cloroquina' },
+      { codigo: 'NAR-2235', fecha: '22/06/26', localidad: 'Chajal', colvol: { n: 'L. Quiñones', c: 'ColVol-03' }, motivo: 'Conviviente', nombre: 'Rosa Angulo', ident: 'CE 5.667.201', nacionalidad: 'Venezolana', sexo: 'M', fnac: '15/06/2007', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Proactiva', medic: 'No' },
+      { codigo: 'NAR-2236', fecha: '22/06/26', localidad: 'San Luis', colvol: { n: 'L. Quiñones', c: 'ColVol-03' }, motivo: 'Sospechoso', nombre: 'Jhon Caicedo', ident: 'CC 987.554', nacionalidad: 'Colombiana', sexo: 'H', fnac: '30/08/1974', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Reactiva', medic: 'No' },
+    ];
+    const rows = [
+      { codigo: 'NAR-3312', fecha: '24/06/26', localidad: 'Llorente', colvol: { n: 'D. Angulo', c: 'ColVol-01' }, motivo: 'Sospechoso', nombre: 'Yudy Riascos', ident: 'CC 1.087.112', nacionalidad: 'Colombiana', sexo: 'M', fnac: '04/05/1990', pdr: { s: 'positive', l: 'P. falciparum' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-3311', fecha: '24/06/26', localidad: 'Espriella', colvol: { n: 'R. Caicedo', c: 'ColVol-02' }, motivo: 'Sospechoso', nombre: 'Néstor Cortés', ident: 'CC 1.088.220', nacionalidad: 'Colombiana', sexo: 'H', fnac: '19/12/1982', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-3309', fecha: '23/06/26', localidad: 'San Luis', colvol: { n: 'L. Quiñones', c: 'ColVol-03' }, motivo: 'Conviviente', nombre: 'Carla Preciado', ident: 'TI 1.010.990', nacionalidad: 'Colombiana', sexo: 'M', fnac: '08/07/2016', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Proactiva', medic: 'No' },
+      { codigo: 'NAR-3307', fecha: '23/06/26', localidad: 'Tumaco', colvol: { n: 'R. Caicedo', c: 'ColVol-02' }, motivo: 'Seguimiento', nombre: 'Óscar Mesa', ident: 'CC 1.234.100', nacionalidad: 'Colombiana', sexo: 'H', fnac: '27/03/1995', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Proactiva', medic: 'Sí · Primaquina' },
+      { codigo: 'NAR-3305', fecha: '22/06/26', localidad: 'Chajal', colvol: { n: 'L. Quiñones', c: 'ColVol-03' }, motivo: 'Sospechoso', nombre: 'Beatriz Landázuri', ident: 'CC 1.445.882', nacionalidad: 'Colombiana', sexo: 'M', fnac: '11/02/1978', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Reactiva', medic: 'No' },
+      { codigo: 'NAR-3303', fecha: '22/06/26', localidad: 'Candelillas', colvol: { n: 'D. Angulo', c: 'ColVol-01' }, motivo: 'Seguimiento', nombre: 'Pedro Castro', ident: 'CC 900.221', nacionalidad: 'Colombiana', sexo: 'H', fnac: '05/09/1969', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-3301', fecha: '21/06/26', localidad: 'Imbilí', colvol: { n: 'M. Prado', c: 'ColVol-04' }, motivo: 'Sospechoso', nombre: 'Sara Obando', ident: 'CC 1.099.334', nacionalidad: 'Colombiana', sexo: 'M', fnac: '30/10/2001', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Pasiva', medic: 'No' },
+      { codigo: 'NAR-3298', fecha: '21/06/26', localidad: 'Llorente', colvol: { n: 'D. Angulo', c: 'ColVol-01' }, motivo: 'Sospechoso', nombre: 'Diego Riascos', ident: 'CC 1.055.667', nacionalidad: 'Colombiana', sexo: 'H', fnac: '14/08/1988', pdr: { s: 'pending', l: 'Inválida' }, busqueda: 'Pasiva', medic: 'No' },
+    ];
+    const finalRows = this.state.justAdded ? newRows.concat(rows) : rows;
+    return this.buildTable(columns, finalRows);
+  }
+
+  buildApiSteps() {
+    const R = React.createElement;
+    const steps = [
+      { t: 'Autentícate con tu clave', d: 'Incluye el encabezado Authorization: Bearer <API_KEY> en cada petición.' },
+      { t: 'Consulta el endpoint de casos', d: 'GET /v1/cases con parámetros de región, distrito y rango de fechas.' },
+      { t: 'Pagina y procesa', d: 'La respuesta es JSON paginado (200 registros/página) con datos anonimizados.' },
+    ];
+    return R('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } }, steps.map((s, i) =>
+      R('div', { key: i, style: { display: 'flex', gap: 13, alignItems: 'flex-start' } },
+        R('div', { style: { width: 26, height: 26, flexShrink: 0, borderRadius: '50%', background: 'var(--blue-50)', color: 'var(--blue-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' } }, String(i + 1)),
+        R('div', {},
+          R('div', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text-strong)' } }, s.t),
+          R('div', { style: { fontSize: 13, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.5 } }, s.d),
+        ),
+      )));
+  }
+
+  buildEndpoints() {
+    const R = React.createElement;
+    const eps = [
+      { m: 'GET', p: '/v1/cases', d: 'Casos individuales anonimizados' },
+      { m: 'GET', p: '/v1/cases/summary', d: 'Agregados por localidad y semana' },
+      { m: 'GET', p: '/v1/localities', d: 'Catálogo de territorios' },
+    ];
+    return R('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, eps.map((e, i) =>
+      R('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', background: 'var(--surface-page)' } },
+        R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 10.5, fontWeight: 700, color: 'var(--green-700)', background: 'var(--green-50)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' } }, e.m),
+        R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-strong)', flex: 1 } }, e.p),
+      )));
+  }
+
+  buildManualTable() {
+    const R = React.createElement;
+    const mono = (v) => R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-strong)' } }, v);
+    const dt = (v) => R('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--text-muted)' } }, v);
+    const columns = [
+      { key: 'id', header: 'Caso (anón.)', render: mono },
+      { key: 'semana', header: 'Sem. epi.', render: dt },
+      { key: 'distrito', header: 'Distrito' },
+      { key: 'localidad', header: 'Localidad' },
+      { key: 'motivo', header: 'Motivo' },
+      { key: 'sexo', header: 'Sexo', align: 'center' },
+      { key: 'grupo', header: 'Grupo edad' },
+      { key: 'pdr', header: 'PDR', render: (v) => this.pill(v.s, v.l) },
+      { key: 'busqueda', header: 'Tipo de búsqueda' },
+    ];
+    // Consolidado anonimizado — refleja los registros validados por los supervisores
+    // (incluye el lote recién cargado NAR-223x). Sin identificadores personales.
+    const rows = [
+      { id: 'anon-a231', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Llorente', motivo: 'Sospechoso', sexo: 'M', grupo: '25-34', pdr: { s: 'positive', l: 'P. falciparum' }, busqueda: 'Pasiva' },
+      { id: 'anon-a232', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Llorente', motivo: 'Conviviente', sexo: 'H', grupo: '35-44', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Reactiva' },
+      { id: 'anon-a233', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Espriella', motivo: 'Sospechoso', sexo: 'M', grupo: '5-14', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Pasiva' },
+      { id: 'anon-a234', semana: '2026-W26', distrito: 'Tumaco', localidad: 'Tumaco', motivo: 'Seguimiento', sexo: 'H', grupo: '25-34', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Proactiva' },
+      { id: 'anon-a235', semana: '2026-W26', distrito: 'Barbacoas', localidad: 'Chajal', motivo: 'Conviviente', sexo: 'M', grupo: '15-24', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Proactiva' },
+      { id: 'anon-a236', semana: '2026-W26', distrito: 'Tumaco', localidad: 'San Luis', motivo: 'Sospechoso', sexo: 'H', grupo: '45-59', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Reactiva' },
+      { id: 'anon-9f21', semana: '2026-W25', distrito: 'Tumaco', localidad: 'Candelillas', motivo: 'Seguimiento', sexo: 'H', grupo: '45-59', pdr: { s: 'negative', l: 'Negativa' }, busqueda: 'Pasiva' },
+      { id: 'anon-9f18', semana: '2026-W25', distrito: 'Tumaco', localidad: 'Imbilí', motivo: 'Sospechoso', sexo: 'M', grupo: '25-34', pdr: { s: 'positive', l: 'P. vivax' }, busqueda: 'Pasiva' },
+    ];
+    return this.buildTable(columns, rows);
+  }
+
+  normDept(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim(); }
+
+  regionInfo(name) {
+    // plausible surveillance figures per department (Nariño is the focus)
+    const data = {
+      'NARINO': { cases: 1284, pos: '12.4%', localities: '18 de 24', trend: '+8.2%' },
+      'CHOCO': { cases: 964, pos: '15.1%', localities: '21 de 30', trend: '+11.0%' },
+      'CAUCA': { cases: 512, pos: '9.7%', localities: '12 de 20', trend: '+3.4%' },
+      'VALLE DEL CAUCA': { cases: 287, pos: '6.2%', localities: '8 de 16', trend: '-1.2%' },
+      'ANTIOQUIA': { cases: 631, pos: '10.8%', localities: '19 de 40', trend: '+5.6%' },
+      'CORDOBA': { cases: 418, pos: '8.9%', localities: '10 de 18', trend: '+2.1%' },
+      'AMAZONAS': { cases: 356, pos: '13.7%', localities: '7 de 11', trend: '+6.9%' },
+      'PUTUMAYO': { cases: 402, pos: '11.5%', localities: '9 de 13', trend: '+4.8%' },
+      'GUAVIARE': { cases: 173, pos: '7.4%', localities: '3 de 4', trend: '+1.0%' },
+      'VICHADA': { cases: 142, pos: '9.1%', localities: '3 de 4', trend: '-0.6%' },
+    };
+    return data[this.normDept(name)] || { cases: 0, pos: '—', localities: '—', trend: '—' };
+  }
+
+  buildColombiaMap() {
+    const R = React.createElement;
+    const M = window.COLOMBIA_DEPTS;
+    const sel = this.normDept(this.currentRegion);
+    if (!M) return R('div', { style: { height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' } }, 'Cargando mapa…');
+    const paths = M.deps.map((d) => {
+      const isSel = this.normDept(d.name) === sel;
+      return R('path', {
+        key: d.name, d: d.d,
+        fill: isSel ? 'var(--green-500)' : 'var(--neutral-100)',
+        stroke: isSel ? 'var(--green-700)' : 'var(--border-default)',
+        strokeWidth: isSel ? 2 : 1,
+        strokeLinejoin: 'round',
+        style: isSel ? { filter: 'drop-shadow(0 3px 8px color-mix(in srgb, var(--green-500) 45%, transparent))' } : null,
+      });
+    });
+    // centroid of selected for marker
+    let marker = null, labelPos = null;
+    const selDep = M.deps.find((d) => this.normDept(d.name) === sel);
+    if (selDep) {
+      const nums = selDep.d.match(/\d+/g).map(Number);
+      let sx = 0, sy = 0, n = 0, minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+      for (let i = 0; i < nums.length; i += 2) { const x = nums[i], y = nums[i + 1]; sx += x; sy += y; n++; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      labelPos = { cx, cy };
+      marker = R('g', {},
+        R('circle', { cx, cy, r: 46, fill: 'none', stroke: 'var(--green-600)', strokeWidth: 2, strokeDasharray: '5 6', opacity: 0.7 }),
+      );
+    }
+    const svg = R('svg', { viewBox: '0 0 ' + M.w + ' ' + M.h, preserveAspectRatio: 'xMidYMid meet', style: { height: '100%', width: '100%', display: 'block', overflow: 'visible' } },
+      paths, marker,
+    );
+    return svg;
+  }
+
+  buildChoropleth() {
+    const R = React.createElement;
+    // Density buckets from brand green (low) → clinical red (high)
+    const scale = ['#EAF3DC', '#C9E29B', '#92BF4E', '#E69A29', '#D64545'];
+    const zones = [
+      { n: 'Llorente', c: 62, x: 250, y: 40, path: 'M250,40 L340,55 L360,120 L300,160 L235,130 L230,75 Z' },
+      { n: 'Espriella', c: 48, x: 150, y: 70, path: 'M150,70 L230,75 L235,130 L180,165 L120,135 L120,90 Z' },
+      { n: 'Tumaco', c: 71, x: 60, y: 140, path: 'M60,140 L120,135 L180,165 L165,235 L95,255 L45,205 Z' },
+      { n: 'San Luis', c: 33, x: 180, y: 165, path: 'M180,165 L235,130 L300,160 L290,225 L230,250 L165,235 Z' },
+      { n: 'Chajal', c: 55, x: 300, y: 160 , path: 'M300,160 L360,120 L395,175 L360,240 L290,225 Z' },
+      { n: 'Candelillas', c: 24, x: 95, y: 255, path: 'M95,255 L165,235 L230,250 L215,315 L140,330 L85,295 Z' },
+      { n: 'Imbilí', c: 40, x: 230, y: 250, path: 'M230,250 L290,225 L360,240 L350,305 L280,325 L215,315 Z' },
+    ];
+    const bucket = (c) => c >= 60 ? 4 : c >= 45 ? 3 : c >= 30 ? 2 : c >= 15 ? 1 : 0;
+    const svg = R('svg', { viewBox: '0 0 420 360', style: { width: '100%', height: 'auto', display: 'block' } },
+      zones.map((z, i) => {
+        const fill = scale[bucket(z.c)];
+        return R('g', { key: i },
+          R('path', { d: z.path, fill, stroke: '#fff', strokeWidth: 2, style: { cursor: 'pointer' } }),
+        );
+      }),
+      zones.map((z, i) => {
+        // label centroid approx via bounding of first two coords
+        const nums = z.path.match(/[\d.]+/g).map(Number);
+        let sx = 0, sy = 0, n = 0;
+        for (let k = 0; k < nums.length; k += 2) { sx += nums[k]; sy += nums[k + 1]; n++; }
+        const cx = sx / n, cy = sy / n;
+        const dark = bucket(z.c) >= 3;
+        return R('g', { key: 'l' + i },
+          R('text', { x: cx, y: cy - 2, textAnchor: 'middle', style: { fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, fill: dark ? '#fff' : 'var(--neutral-800)' } }, z.n),
+          R('text', { x: cx, y: cy + 14, textAnchor: 'middle', style: { fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, fill: dark ? 'rgba(255,255,255,.9)' : 'var(--neutral-600)' } }, String(z.c)),
+        );
+      }),
+    );
+    const legend = R('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, justifyContent: 'center' } },
+      R('span', { style: { fontSize: 11.5, color: 'var(--text-faint)' } }, 'Menos casos'),
+      R('div', { style: { display: 'flex', gap: 3 } }, scale.map((c, i) => R('span', { key: i, style: { width: 26, height: 10, background: c, borderRadius: 2 } }))),
+      R('span', { style: { fontSize: 11.5, color: 'var(--text-faint)' } }, 'Más casos'),
+    );
+    return R('div', {}, svg, legend);
+  }
+
+  lineChart(data, opts) {
+    const R = React.createElement;
+    const W = 380, H = 150, pad = { l: 30, r: 8, t: 10, b: 22 };
+    const max = opts.max, color = opts.color;
+    const xs = (i) => pad.l + (i / (data.length - 1)) * (W - pad.l - pad.r);
+    const ys = (v) => pad.t + (1 - v / max) * (H - pad.t - pad.b);
+    const pts = data.map((d, i) => [xs(i), ys(d.v)]);
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    const area = line + ' L' + xs(data.length - 1).toFixed(1) + ',' + (H - pad.b) + ' L' + pad.l + ',' + (H - pad.b) + ' Z';
+    const gid = 'g' + opts.id;
+    const grid = [0, 0.5, 1].map((f, i) => {
+      const y = pad.t + f * (H - pad.t - pad.b);
+      return R('g', { key: i },
+        R('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y, stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+        R('text', { x: pad.l - 6, y: y + 3, textAnchor: 'end', style: { fontFamily: 'var(--font-mono)', fontSize: 9.5, fill: 'var(--text-faint)' } }, Math.round(max * (1 - f) * 10) / 10),
+      );
+    });
+    return R('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', display: 'block' } },
+      R('defs', {}, R('linearGradient', { id: gid, x1: 0, y1: 0, x2: 0, y2: 1 },
+        R('stop', { offset: '0%', stopColor: color, stopOpacity: 0.22 }),
+        R('stop', { offset: '100%', stopColor: color, stopOpacity: 0 }))),
+      grid,
+      R('path', { d: area, fill: 'url(#' + gid + ')' }),
+      R('path', { d: line, fill: 'none', stroke: color, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+      pts.map((p, i) => data[i].hi ? R('circle', { key: i, cx: p[0], cy: p[1], r: 3.5, fill: '#fff', stroke: color, strokeWidth: 2 }) : null),
+      data.map((d, i) => i % 2 === 0 ? R('text', { key: 't' + i, x: xs(i), y: H - 6, textAnchor: 'middle', style: { fontFamily: 'var(--font-mono)', fontSize: 9, fill: 'var(--text-faint)' } }, d.l) : null),
+    );
+  }
+
+  ageSexChart() {
+    const R = React.createElement;
+    const data = [
+      { l: '0-4', m: 6, h: 8 }, { l: '5-14', m: 22, h: 19 }, { l: '15-24', m: 41, h: 33 },
+      { l: '25-34', m: 58, h: 44 }, { l: '35-44', m: 47, h: 39 }, { l: '45-59', m: 28, h: 24 }, { l: '60+', m: 12, h: 9 },
+    ];
+    const W = 400, H = 190, pad = { l: 30, r: 8, t: 10, b: 26 };
+    const max = 60;
+    const cMuj = 'var(--green-500)', cHom = 'var(--blue-500)';
+    const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+    const groupW = plotW / data.length, barW = groupW * 0.32, gap = groupW * 0.06;
+    const ys = (v) => pad.t + (1 - v / max) * plotH;
+    const grid = [0, 0.5, 1].map((fr, i) => {
+      const y = pad.t + fr * plotH;
+      return R('g', { key: i },
+        R('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y, stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+        R('text', { x: pad.l - 6, y: y + 3, textAnchor: 'end', style: { fontFamily: 'var(--font-mono)', fontSize: 9.5, fill: 'var(--text-faint)' } }, Math.round(max * (1 - fr))));
+    });
+    const bars = data.map((d, i) => {
+      const gx = pad.l + i * groupW + groupW / 2;
+      const yM = ys(d.m), yH = ys(d.h);
+      return R('g', { key: i },
+        R('rect', { x: gx - barW - gap, y: yM, width: barW, height: (H - pad.b) - yM, rx: 3, fill: cMuj }),
+        R('rect', { x: gx + gap, y: yH, width: barW, height: (H - pad.b) - yH, rx: 3, fill: cHom }),
+        R('text', { x: gx, y: H - 8, textAnchor: 'middle', style: { fontFamily: 'var(--font-mono)', fontSize: 9.5, fill: 'var(--text-faint)' } }, d.l));
+    });
+    const svg = R('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', display: 'block' } }, grid, bars);
+    const legend = R('div', { style: { display: 'flex', gap: 18, marginTop: 8, justifyContent: 'center' } },
+      R('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-muted)' } }, R('span', { style: { width: 11, height: 11, borderRadius: 3, background: cMuj } }), 'Mujeres (M)'),
+      R('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-muted)' } }, R('span', { style: { width: 11, height: 11, borderRadius: 3, background: cHom } }), 'Hombres (H)'));
+    return R('div', {}, svg, legend);
+  }
+
+  pdrBusquedaChart() {
+    const R = React.createElement;
+    const cats = [
+      { k: 'vivax', label: 'P. vivax', color: 'var(--species-vivax)' },
+      { k: 'falc', label: 'P. falciparum', color: 'var(--species-falciparum)' },
+      { k: 'neg', label: 'Negativa', color: 'var(--status-negative-500)' },
+      { k: 'inv', label: 'Inválida', color: 'var(--neutral-400)' },
+    ];
+    const data = [
+      { l: 'Pasiva', vivax: 120, falc: 40, neg: 260, inv: 12 },
+      { l: 'Proactiva', vivax: 80, falc: 25, neg: 150, inv: 8 },
+      { l: 'Reactiva', vivax: 60, falc: 30, neg: 90, inv: 5 },
+    ];
+    const W = 400, H = 190, pad = { l: 34, r: 8, t: 10, b: 26 };
+    const max = 440;
+    const plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+    const groupW = plotW / data.length, barW = groupW * 0.44;
+    const ys = (v) => pad.t + (1 - v / max) * plotH;
+    const grid = [0, 0.5, 1].map((fr, i) => {
+      const y = pad.t + fr * plotH;
+      return R('g', { key: i },
+        R('line', { x1: pad.l, y1: y, x2: W - pad.r, y2: y, stroke: 'var(--border-subtle)', strokeWidth: 1 }),
+        R('text', { x: pad.l - 6, y: y + 3, textAnchor: 'end', style: { fontFamily: 'var(--font-mono)', fontSize: 9.5, fill: 'var(--text-faint)' } }, Math.round(max * (1 - fr))));
+    });
+    const bars = data.map((d, i) => {
+      const gx = pad.l + i * groupW + groupW / 2 - barW / 2;
+      let acc = 0;
+      const segs = cats.map((c, j) => {
+        const v = d[c.k]; const y0 = ys(acc); const y1 = ys(acc + v); acc += v;
+        return R('rect', { key: j, x: gx, y: y1, width: barW, height: y0 - y1, fill: c.color });
+      });
+      return R('g', { key: i }, segs,
+        R('text', { x: gx + barW / 2, y: H - 8, textAnchor: 'middle', style: { fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 600, fill: 'var(--text-muted)' } }, d.l));
+    });
+    const svg = R('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', display: 'block' } }, grid, bars);
+    const legend = R('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 8, justifyContent: 'center' } },
+      cats.map((c, i) => R('span', { key: i, style: { display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-muted)' } },
+        R('span', { style: { width: 11, height: 11, borderRadius: 3, background: c.color } }), c.label)));
+    return R('div', {}, svg, legend);
+  }
+
+  buildChips() {
+    const R = React.createElement;
+    const f = this.state.filters;
+    const defs = [
+      { k: 'pv', label: 'P. vivax', color: 'var(--species-vivax)' },
+      { k: 'pf', label: 'P. falciparum', color: 'var(--species-falciparum)' },
+      { k: 'neg', label: 'Negativa', color: 'var(--status-negative-500)' },
+      { k: 'inv', label: 'Inválida', color: 'var(--neutral-500)' },
+    ];
+    const toggle = (k) => this.setState((s) => ({ filters: Object.assign({}, s.filters, { [k]: !s.filters[k] }) }));
+    return R('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, defs.map((d) => {
+      const on = f[d.k];
+      return R('button', {
+        key: d.k, onClick: () => toggle(d.k),
+        style: {
+          display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+          padding: '7px 13px', borderRadius: 'var(--radius-pill)', fontFamily: 'var(--font-sans)',
+          fontSize: 13.5, fontWeight: 600, transition: 'all .12s',
+          border: on ? '1px solid ' + d.color : '1px solid var(--border-default)',
+          background: on ? 'color-mix(in srgb, ' + d.color + ' 12%, #fff)' : '#fff',
+          color: on ? 'var(--text-strong)' : 'var(--text-muted)',
+        },
+      },
+        R('span', { style: { width: 9, height: 9, borderRadius: '50%', background: on ? d.color : 'var(--border-strong)' } }),
+        d.label,
+      );
+    }));
+  }
+
+  renderVals() {
+    const route = this.state.route;
+    const tabBase = 'display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .12s;';
+    const tabOn = tabBase + 'background:#fff;color:var(--text-strong);box-shadow:var(--shadow-sm);';
+    const tabOff = tabBase + 'background:transparent;color:var(--text-muted);';
+    const isApiTab = this.state.apiTab === 'api';
+    const incData = [
+      { l: 'W15', v: 2.1 }, { l: 'W16', v: 2.4 }, { l: 'W17', v: 2.2 }, { l: 'W18', v: 2.8 },
+      { l: 'W19', v: 3.1 }, { l: 'W20', v: 2.9 }, { l: 'W21', v: 3.4 }, { l: 'W22', v: 3.2 },
+      { l: 'W23', v: 3.0 }, { l: 'W24', v: 3.5 }, { l: 'W25', v: 3.8 }, { l: 'W26', v: 3.6, hi: true },
+    ];
+    const posData = [
+      { l: 'W15', v: 9.8 }, { l: 'W16', v: 10.5 }, { l: 'W17', v: 11.2 }, { l: 'W18', v: 10.8 },
+      { l: 'W19', v: 12.1 }, { l: 'W20', v: 13.4 }, { l: 'W21', v: 12.8 }, { l: 'W22', v: 13.9 },
+      { l: 'W23', v: 13.1 }, { l: 'W24', v: 12.6 }, { l: 'W25', v: 13.5 }, { l: 'W26', v: 12.4, hi: true },
+    ];
+    const codeSnippet = 'import requests\n\nAPI = "https://api.rmei.org/v1/cases"\nHEADERS = {"Authorization": "Bearer rmei_live_a3f9..."}\n\nparams = {\n    "region": "narino",\n    "district": "tumaco",\n    "from": "2026-06-01",\n    "to": "2026-06-30",\n}\n\nr = requests.get(API, headers=HEADERS, params=params)\ndata = r.json()          # datos anonimizados\nprint(len(data["results"]), "casos")';
+    const personas = {
+      upload: { title: 'Cargar registros', sub: 'Supervisor · Carga de formatos PDR', user: 'James Torres', role: 'Supervisor · Tumaco, Nariño', initials: 'JT', avatarBg: 'var(--blue-500)' },
+      search: { title: 'Buscar y descargar', sub: 'Supervisor · Búsqueda y exportación', user: 'James Torres', role: 'Supervisor · Tumaco, Nariño', initials: 'JT', avatarBg: 'var(--blue-500)' },
+      api: { title: 'Descarga de datos', sub: 'Especialista · Acceso a datos y API', user: 'Marco Fernández', role: 'Especialista de datos · MinSalud', initials: 'MF', avatarBg: 'var(--green-600)' },
+      dashboard: { title: 'Panel epidemiológico', sub: 'Gerente · Vigilancia territorial', user: 'Manuela Hernández', role: 'Gerente de salud · Nariño', initials: 'MH', avatarBg: 'var(--species-malariae)' },
+    };
+    return {
+      sidebar: this.buildSidebar(),
+      persona: personas[route] || personas.upload,
+      identity: this.identities()[this.state.role] || this.identities().guest,
+      showLogin: this.state.view === 'login',
+      showApp: this.state.view === 'app',
+      loginError: this.state.loginError,
+      userRef: this.userRef,
+      passRef: this.passRef,
+      submitLogin: () => this.submitLogin(),
+      cancelLogin: () => this.cancelLogin(),
+      loginIcon: this.ic('login', 18),
+      userIcon: this.ic('user', 17, 'var(--text-faint)'),
+      lockIcon: this.ic('lock', 17, 'var(--text-faint)'),
+      onLoginKey: (e) => { if (e.key === 'Enter') this.submitLogin(); },
+      isUpload: route === 'upload',
+      isSearch: route === 'search',
+      isApi: route === 'api',
+      isDash: route === 'dashboard',
+      stepIdle: this.state.uploadStep === 'idle',
+      stepProcessing: this.state.uploadStep === 'processing',
+      stepReview: this.state.uploadStep === 'review',
+      doUpload: () => { this.setState({ uploadStep: 'processing' }); clearTimeout(this._ocr); this._ocr = setTimeout(() => this.setState({ uploadStep: 'review' }), 2000); },
+      resetUpload: () => this.setState({ uploadStep: 'idle' }),
+      cameraIcon: this.ic('camera', 16),
+      scanIcon: this.ic('scan', 30),
+      doValidate: () => this.doValidate(),
+      reviewRows: this.buildReviewRows(),
+      searchTable: this.buildSearchTable(),
+      searchShown: this.state.justAdded ? 30 : 24,
+      searchTotal: this.state.justAdded ? 134 : 128,
+      resultChips: this.buildChips(),
+      doSearch: () => this.fireToast('Se encontraron 24 registros que coinciden con los filtros'),
+      doDownload: () => this.fireToast('Descargando registros_tumaco_jun2026.xlsx (24 registros)'),
+      filterIcon: this.ic('filter', 16),
+      downloadIcon: this.ic('download', 16),
+      codeIcon: this.ic('code', 15),
+      copyIcon: this.ic('copy', 14),
+      apiIsApi: isApiTab,
+      apiIsManual: !isApiTab,
+      setTabApi: () => this.setState({ apiTab: 'api' }),
+      setTabManual: () => this.setState({ apiTab: 'manual' }),
+      tabApiStyle: isApiTab ? tabOn : tabOff,
+      tabManualStyle: !isApiTab ? tabOn : tabOff,
+      apiSteps: this.buildApiSteps(),
+      endpointList: this.buildEndpoints(),
+      manualTable: this.buildManualTable(),
+      codeSnippet: codeSnippet,
+      copyCode: () => this.fireToast('Fragmento de código copiado al portapapeles'),
+      copyKey: () => this.fireToast('Clave de API copiada al portapapeles'),
+      dlCsv: () => this.fireToast('Descargando casos_narino_jun2026.csv (1.284 registros)'),
+      dlXlsx: () => this.fireToast('Descargando casos_narino_jun2026.xlsx (1.284 registros)'),
+      choropleth: this.buildChoropleth(),
+      colombiaMap: this.buildColombiaMap(),
+      currentRegion: this.currentRegion,
+      regionCases: this.regionInfo(this.currentRegion).cases.toLocaleString('es-CO'),
+      regionPos: this.regionInfo(this.currentRegion).pos,
+      regionLocalities: this.regionInfo(this.currentRegion).localities,
+      regionTrend: this.regionInfo(this.currentRegion).trend,
+      regionOptions: ['Nariño', 'Chocó', 'Cauca', 'Valle del Cauca', 'Antioquia', 'Córdoba', 'Amazonas', 'Putumayo', 'Guaviare', 'Vichada'],
+      onRegionChange: (e) => this.setState({ dashRegion: e.target.value }),
+      ageSexChart: this.ageSexChart(),
+      pdrBusquedaChart: this.pdrBusquedaChart(),
+      incidenceChart: this.lineChart(incData, { max: 4, color: 'var(--blue-500)', id: 'inc' }),
+      positivityChart: this.lineChart(posData, { max: 16, color: 'var(--status-positive-500)', id: 'pos' }),
+      toast: this.state.toast,
+      searchIcon: this.ic('search', 16, 'var(--text-faint)'),
+      bellIcon: this.ic('bell', 18),
+      uploadIcon: this.ic('upload', 30),
+      browseIcon: this.ic('folder', 16),
+      checkIcon: this.ic('check', 16),
+      thStyle: 'text-align:left;padding:11px 16px;font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-sunken);border-bottom:1px solid var(--border-subtle);white-space:nowrap',
+      tdStyle: 'padding:10px 16px;font-size:14px;color:var(--text-body);vertical-align:middle',
+    };
+  }
+}
+</script>
+</body>
+</html>

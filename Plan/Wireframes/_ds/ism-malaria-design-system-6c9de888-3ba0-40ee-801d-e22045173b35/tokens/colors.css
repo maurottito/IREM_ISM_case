@@ -1,0 +1,103 @@
+/* ============================================================
+   ISM Malaria — Color tokens
+   Brand: green #92BF4E (health, life, "leaf/fish") + blue #217AB3 (water, IDB)
+   Semantic set tuned for diagnostic reporting (case status, alerts).
+   ============================================================ */
+:root {
+  /* -- Brand green scale (primary) -- */
+  --green-50:  #f2f8e8;
+  --green-100: #e2f0cc;
+  --green-200: #cbe4a4;
+  --green-300: #b2d67a;
+  --green-400: #a2cb61;
+  --green-500: #92bf4e;  /* BRAND GREEN */
+  --green-600: #7aa63c;
+  --green-700: #5f8330;
+  --green-800: #486325;
+  --green-900: #35491d;
+
+  /* -- Brand blue scale (secondary) -- */
+  --blue-50:   #e9f3f9;
+  --blue-100:  #cbe2f0;
+  --blue-200:  #9ec9e3;
+  --blue-300:  #6aacd2;
+  --blue-400:  #3f92c2;
+  --blue-500:  #217ab3;  /* BRAND BLUE */
+  --blue-600:  #1c689a;
+  --blue-700:  #17527a;
+  --blue-800:  #123f5e;
+  --blue-900:  #0e2f47;
+
+  /* -- Neutrals (cool slate, reads clinical + calm) -- */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f7f9fa;
+  --neutral-100: #eef1f4;
+  --neutral-200: #dfe4e9;
+  --neutral-300: #c6cdd5;
+  --neutral-400: #9aa4af;
+  --neutral-500: #6c7883;
+  --neutral-600: #4e5860;
+  --neutral-700: #3a424a;
+  --neutral-800: #262c32;
+  --neutral-900: #161a1e;
+
+  /* -- Diagnostic status palette --
+     Distinct from brand green so "positive/negative" never reads as branding. */
+  --status-positive-50:  #fdecec;   /* malaria detected — clinical red */
+  --status-positive-500: #d64545;
+  --status-positive-700: #a82c2c;
+
+  --status-negative-50:  #eaf6ee;   /* no parasites — clean teal-green */
+  --status-negative-500: #2f9e5f;
+  --status-negative-700: #1f7245;
+
+  --status-pending-50:   #fdf3e3;   /* awaiting result — amber */
+  --status-pending-500:  #e69a29;
+  --status-pending-700:  #a86a12;
+
+  --status-info-50:      #e9f3f9;   /* informational — brand blue family */
+  --status-info-500:     #217ab3;
+  --status-info-700:     #17527a;
+
+  /* Species accents (P. falciparum / vivax / mixed) for case charts */
+  --species-falciparum: #d64545;
+  --species-vivax:      #e69a29;
+  --species-malariae:   #7a5bd6;
+  --species-mixed:      #4e5860;
+
+  /* ============================================================
+     Semantic aliases — reference THESE in components
+     ============================================================ */
+  --color-primary:        var(--green-500);
+  --color-primary-hover:  var(--green-600);
+  --color-primary-active: var(--green-700);
+  --color-primary-soft:   var(--green-50);
+  --color-on-primary:     #ffffff;
+
+  --color-secondary:        var(--blue-500);
+  --color-secondary-hover:  var(--blue-600);
+  --color-secondary-active: var(--blue-700);
+  --color-secondary-soft:   var(--blue-50);
+  --color-on-secondary:     #ffffff;
+
+  --text-strong:   var(--neutral-900);
+  --text-body:     var(--neutral-700);
+  --text-muted:    var(--neutral-500);
+  --text-faint:    var(--neutral-400);
+  --text-on-brand: #ffffff;
+  --text-link:     var(--blue-600);
+
+  --surface-page:    var(--neutral-50);
+  --surface-card:    var(--neutral-0);
+  --surface-sunken:  var(--neutral-100);
+  --surface-inverse: var(--neutral-900);
+  --surface-brand:   var(--green-500);
+  --surface-brand-2: var(--blue-500);
+
+  --border-subtle:  var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong:  var(--neutral-400);
+  --border-focus:   var(--blue-400);
+
+  --ring-focus: 0 0 0 3px rgba(63, 146, 194, 0.35);
+}

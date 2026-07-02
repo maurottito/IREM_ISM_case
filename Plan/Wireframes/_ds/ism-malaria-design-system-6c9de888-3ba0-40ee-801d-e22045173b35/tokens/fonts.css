@@ -1,0 +1,7 @@
+/* ============================================================
+   ISM Malaria — Web fonts
+   Source Sans 3 (workhorse) + IBM Plex Mono (case IDs, codes, data).
+   ⚠ Loaded from Google Fonts CDN. See typography.css for the
+   substitution note — supply licensed brand fonts to self-host.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
