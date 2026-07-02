@@ -173,11 +173,6 @@ export function ApiPage({ onToast, userEmail }: ApiPageProps) {
 
   return (
     <div className="page-content full">
-      <div>
-        <div className="page-title">Descarga de datos de vigilancia</div>
-        <div className="page-subtitle">Accede al consolidado regional anonimizado vía API o descarga manual filtrada</div>
-      </div>
-
       <div className="tab-switcher">
         <button type="button" className={`tab-btn${tab === 'api' ? ' active' : ' inactive'}`} onClick={() => setTab('api')}>
           <CodeIcon /> Uso de la API

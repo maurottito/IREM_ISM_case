@@ -117,10 +117,6 @@ export function UploadPage({ onValidate }: UploadPageProps) {
   if (step === 'idle') {
     return (
       <div className="page-content">
-        <div>
-          <div className="page-title">Cargar registros de diagnóstico</div>
-          <div className="page-subtitle">Sube los formatos PDR digitalizados de tus colaboradores voluntarios</div>
-        </div>
         <div className="alert alert-info">
           <strong>Digitaliza el Registro de pruebas diagnósticas</strong>
           <span>Sube las fotos del formato «Registro de pruebas diagnósticas» (Anexo 1). El sistema lee las fotos y llena una tabla por ti — solo revisa, corrige y valida antes de subir.</span>
@@ -168,10 +164,6 @@ export function UploadPage({ onValidate }: UploadPageProps) {
   if (step === 'processing') {
     return (
       <div className="page-content">
-        <div>
-          <div className="page-title">Cargar registros de diagnóstico</div>
-          <div className="page-subtitle">Procesando las fotos…</div>
-        </div>
         <div className="panel upload-processing">
           <div className="spinner" />
           <div>
@@ -188,10 +180,6 @@ export function UploadPage({ onValidate }: UploadPageProps) {
 
   return (
     <div className="page-content" style={{ maxWidth: 'none' }}>
-      <div>
-        <div className="page-title">Cargar registros de diagnóstico</div>
-        <div className="page-subtitle">Revisa los datos extraídos y valida antes de consolidar</div>
-      </div>
       {notice && (
         <div className="alert alert-info">
           <strong>Modo de ejemplo</strong>

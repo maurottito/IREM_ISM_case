@@ -156,11 +156,6 @@ export function SearchPage({ onToast, validatedRows = [], userEmail }: SearchPag
 
   return (
     <div className="page-content full">
-      <div>
-        <div className="page-title">Búsqueda de registros</div>
-        <div className="page-subtitle">Filtra el consolidado local y expórtalo a Excel o envíalo por correo</div>
-      </div>
-
       <div className="panel filters-panel">
         <div className="alert alert-info" style={{ marginBottom: 16 }}>
           <strong>Todos los campos son opcionales</strong>
